@@ -1,0 +1,32 @@
+source ../venv/bin/activate
+python defenses/honeypot_hinge.py \
+  --model meta-llama/Meta-Llama-3-8B-Instruct \
+  --ultrachat_samples 5000 \
+  --cb_path data/circuit_breakers_train.json \
+  --honeypot_path data/cb_train_honeypots.json \
+  --limit_cb 5000 \
+  --limit_hp 5000 \
+  --max_length 256 \
+  --batch_size 4 \
+  --epochs 1 \
+  --lr 2e-4 \
+  --device cuda \
+  --rep_layers 10 20 30 \
+  --w_benign 1.0 \
+  --w_refusal 1.0 \
+  --w_harmful 0.0 \
+  --w_honeypot 0.0 \
+  --w_align_benign 5 \
+  --w_align_refusal 5 \
+  --w_align_honeypot 5 \
+  --margin_ref_gt_hp 0.0 \
+  --margin_hp_gt_harm 0.0 \
+  --w_margin_ref_hp 0 \
+  --w_margin_hp_harm 0 \
+  --margin_harmful_ce 80.0 \
+  --w_margin_harmful_ce 1.0 \
+  --output_dir ./honeypot_hinge_aligned \
+  --save_total_limit 2 \
+  --logging_steps 10 \
+  --save_steps 100 \
+  --grad_accum 2

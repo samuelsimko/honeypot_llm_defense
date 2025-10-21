@@ -1,0 +1,30 @@
+[
+  {
+    "model_path": "/capstor/scratch/cscs/ssimko/RepBend/out/Meta_Llama3_8b_triplet_lr1e-5_target_layers-1_20_num11_0.5_0.4_0.9_0.9_0.0_500_1500_1500_mix_mix_mix_mix_step_response_all_all_True_False/checkpoint-900/",
+    "config_path": "attack_configs.json",
+    "output_dir": "llama3_ablation_attack_results/Meta_Llama3_8b_triplet_lr1e_5_target_layers_1_20_num11_0.5_0.4_0.9_0.9_0.0_500_1500_1500_mix_mix_mix_mix_step_response_all_all_True_False_checkpoint_900_",
+    "benchmark_data_csv": "/capstor/scratch/cscs/ssimko/HarmBench/data/behavior_datasets/harmbench_behaviors_text_val.csv",
+    "targets_json": "/capstor/scratch/cscs/ssimko/HarmBench/data/optimizer_targets/harmbench_targets_text.json"
+  },
+  {
+    "model_path": "/capstor/scratch/cscs/ssimko/RepBend/out/Meta_Llama3_8b_triplet_lr1e-5_target_layers-1_20_num11_0.5_0.4_0.9_0.9_0.0_500_1500_1500_mix_mix_None_mix_step_response_all_all_True_False/checkpoint-900/",
+    "config_path": "attack_configs.json",
+    "output_dir": "llama3_ablation_attack_results/Meta_Llama3_8b_triplet_lr1e_5_target_layers_1_20_num11_0.5_0.4_0.9_0.9_0.0_500_1500_1500_mix_mix_None_mix_step_response_all_all_True_False_checkpoint_900_",
+    "benchmark_data_csv": "/capstor/scratch/cscs/ssimko/HarmBench/data/behavior_datasets/harmbench_behaviors_text_val.csv",
+    "targets_json": "/capstor/scratch/cscs/ssimko/HarmBench/data/optimizer_targets/harmbench_targets_text.json"
+  },
+  {
+    "model_path": "/capstor/scratch/cscs/ssimko/RepBend/out/Meta_Llama3_8b_triplet_lr1e-5_target_layers-1_20_num11_0.5_0.4_0.9_0.9_0.0_500_1500_1500_mix_None_mix_mix_step_response_all_all_True_False/checkpoint-900/",
+    "config_path": "attack_configs.json",
+    "output_dir": "llama3_ablation_attack_results/Meta_Llama3_8b_triplet_lr1e_5_target_layers_1_20_num11_0.5_0.4_0.9_0.9_0.0_500_1500_1500_mix_None_mix_mix_step_response_all_all_True_False_checkpoint_900_",
+    "benchmark_data_csv": "/capstor/scratch/cscs/ssimko/HarmBench/data/behavior_datasets/harmbench_behaviors_text_val.csv",
+    "targets_json": "/capstor/scratch/cscs/ssimko/HarmBench/data/optimizer_targets/harmbench_targets_text.json"
+  },
+  {
+    "model_path": "/capstor/scratch/cscs/ssimko/RepBend/out/Meta_Llama3_8b_triplet_lr1e-5_target_layers-1_20_num11_0.5_0.4_0.9_0.9_0.0_500_1500_1500_mix_None_None_mix_step_response_all_all_True_False/checkpoint-900/",
+    "config_path": "attack_configs.json",
+    "output_dir": "llama3_ablation_attack_results/Meta_Llama3_8b_triplet_lr1e_5_target_layers_1_20_num11_0.5_0.4_0.9_0.9_0.0_500_1500_1500_mix_None_None_mix_step_response_all_all_True_False_checkpoint_900_",
+    "benchmark_data_csv": "/capstor/scratch/cscs/ssimko/HarmBench/data/behavior_datasets/harmbench_behaviors_text_val.csv",
+    "targets_json": "/capstor/scratch/cscs/ssimko/HarmBench/data/optimizer_targets/harmbench_targets_text.json"
+  }
+]

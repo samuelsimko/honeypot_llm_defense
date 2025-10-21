@@ -1,0 +1,3 @@
+[submodule "judges/strong_reject"]
+	path = judges/strong_reject
+	url = https://github.com/dsbowen/strong_reject.git

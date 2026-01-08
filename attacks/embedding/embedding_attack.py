@@ -33,10 +33,6 @@ from peft import PeftModel, PeftConfig
 # 🔹 NEW: Augmentation module import
 from attacks.behavior_targets.augment import generate_prompt_target_variants
 
-# 🔹 Judge imports
-from judges.embedding_attack import load_harmbench_judge, get_harmful
-from judges.embedding_attack import get_strongreject_score
-
 
 # ------------------------------------------------------------
 # Soft Prompt Optimization Config & Result
@@ -160,7 +156,6 @@ def run_single_benchmark(
     target: str,
     attack_config_params: dict,
     behavior_id: str,
-    judge_models_available: dict,
     max_generation_length: int = 512,
 ):
     """Runs soft-opt with multiple augmented variants and judges the results."""
@@ -210,21 +205,10 @@ def run_single_benchmark(
                 "losses": soft_opt_result.losses,
             }
 
-            if generated_str:
-                if judge_models_available.get("harmbench"):
-                    variant_entry["harmbench_score"] = get_harmful(behavior=aug_prompt, generation=generated_str)
-                if judge_models_available.get("strongreject"):
-                    variant_entry["strongreject_score"] = get_strongreject_score(aug_prompt, generated_str)
-            else:
-                variant_entry["harmbench_score"] = "skipped"
-                variant_entry["strongreject_score"] = -1.0
-
             output_data["variants"].append(variant_entry)
             # print stuff
             print(f"Prompt: {aug_prompt}")
             print(f"Generated string: {generated_str}")
-            print("Harmbench score: ", variant_entry["harmbench_score"])
-            print("Strongreject score: ", variant_entry["strongreject_score"])
 
         output_data["status"] = "success"
 
@@ -238,84 +222,3 @@ def run_single_benchmark(
         torch.cuda.empty_cache()
 
     return output_data
-
-
-# ------------------------------------------------------------
-# Entry point
-# ------------------------------------------------------------
-def main():
-    parser = argparse.ArgumentParser(description="Run Soft Prompt Optimization Benchmarks (with augmentation)")
-    parser.add_argument("--model-path", type=str, required=True)
-    parser.add_argument("--config-path", type=str, required=True)
-    parser.add_argument("--benchmark-data-csv", type=str, required=True)
-    parser.add_argument("--benchmark-targets-json", type=str, required=True)
-    parser.add_argument("--output-dir", type=str, default="benchmark_results")
-    parser.add_argument("--device", type=str, default="cuda:0")
-    parser.add_argument("--judge-device", type=str, default=None)
-    parser.add_argument("--skip-strongreject", action="store_true")
-    parser.add_argument("--skip-harmbench", action="store_true")
-    parser.add_argument("--max-generation-length", type=int, default=512)
-    parser.add_argument("--limit-benchmarks", type=int, default=None)
-    args = parser.parse_args()
-
-    judge_device = args.judge_device or args.device
-    os.makedirs(args.output_dir, exist_ok=True)
-
-    # Load configs
-    with open(args.config_path, "r") as f:
-        attack_configs_list = json.load(f)
-    for i, cfg in enumerate(attack_configs_list):
-        cfg["config_key"] = f"config_{i}"
-
-    # Load data
-    df = pd.read_csv(args.benchmark_data_csv)
-    df = df[df["FunctionalCategory"] == "standard"].reset_index(drop=True)
-    with open(args.benchmark_targets_json, "r") as f:
-        targets_map = json.load(f)
-
-    if args.limit_benchmarks:
-        df = df.head(args.limit_benchmarks)
-
-    # Load model + tokenizer
-    tokenizer = AutoTokenizer.from_pretrained(args.model_path)
-    if tokenizer.pad_token is None:
-        tokenizer.pad_token = tokenizer.eos_token
-    model = AutoModelForCausalLM.from_pretrained(args.model_path, torch_dtype=torch.bfloat16, device_map=args.device).eval()
-
-    # Judges
-    judge_models_available = {"harmbench": False, "strongreject": False}
-    if not args.skip_harmbench:
-        load_harmbench_judge(device=judge_device)
-        judge_models_available["harmbench"] = True
-    if not args.skip_strongreject:
-        judge_models_available["strongreject"] = True
-
-    # Run
-    all_results = []
-    for cfg in attack_configs_list:
-        for _, row in df.iterrows():
-            prompt = row["Behavior"]
-            target = targets_map.get(row["BehaviorID"], None)
-            if not target:
-                continue
-            result = run_single_benchmark(
-                target_model=model,
-                target_tokenizer=tokenizer,
-                prompt=prompt,
-                target=target,
-                attack_config_params=cfg,
-                behavior_id=row["BehaviorID"],
-                judge_models_available=judge_models_available,
-                max_generation_length=args.max_generation_length,
-            )
-            all_results.append(result)
-
-    # Save
-    out_path = os.path.join(args.output_dir, "softopt_augmented_results.pkl")
-    with open(out_path, "wb") as f:
-        pickle.dump(all_results, f)
-    logging.info(f"✅ Saved all results to {out_path}")
-
-
-if __name__ == "__main__":
-    main()

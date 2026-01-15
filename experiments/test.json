@@ -1,0 +1,79 @@
+{
+  "meta": {
+    "experiment_name": "honeypot_pipeline_smoke_test",
+    "output_root": "runs/experiments"
+  },
+
+  "cluster": {
+    "partition": "tamper_resistance",
+    "account": "zhijing_jin",
+    "gres": "gpu:1",
+    "time_train": "00:20:00",
+    "time_attack": "00:20:00",
+    "time_benign": "00:20:00"
+  },
+
+  "datasets": {
+    "harmbench_csv": "data/harmbench_behaviors_text_val.csv",
+    "harmbench_targets": "data/harmbench_targets_text.json"
+  },
+
+  "models": {
+    "qwen3_8b": {
+      "hf_id": "Qwen/Qwen3-8B"
+    }
+  },
+
+  "defenses": {
+    "hp_cb_tiny": {
+      "script": "defenses/honeypot_cb.py",
+      "base_model": "qwen3_8b",
+      "output_subdir": "hp_cb_tiny",
+      "data": {
+        "cb_path": "data/circuit_breakers_train.json",
+        "honeypot_path": "data/honeypots_generated.jsonl"
+      },
+      "train_args": {
+        "num_max_steps": 10,
+        "batch_size": 2,
+        "ultrachat_samples": 20,
+        "limit_cb": 20,
+        "limit_hp": 20,
+        "w_honeypot": 0.2
+      }
+    }
+  },
+
+  "attacks": {
+    "soft_prompt_smoke": {
+      "attack_name": "soft_prompt",
+      "attack_config_path": "experiments/configs/soft_prompt_smoke.json",
+      "limit": 2
+    },
+
+    "universal_plain": {
+      "attack_name": "universal_soft_prompt",
+      "attack_config_path": "experiments/configs/universal_soft_prompt_plain.json",
+      "limit": 2
+    },
+
+    "universal_honeypot_neg": {
+      "attack_name": "universal_soft_prompt",
+      "attack_config_path": "experiments/configs/universal_soft_prompt_honeypot_neg.json",
+      "limit": 2
+    }
+  },
+
+  "benign_evals": {
+    "tiny_eval": {
+      "tasks": "gsm8k",
+      "limit": 4
+    }
+  },
+
+  "pipeline": [
+    { "stage": "train", "defense": "hp_cb_tiny" },
+    { "stage": "attack", "defense": "hp_cb_tiny", "attacks": ["universal_plain", "universal_honeypot_neg"] },
+    { "stage": "benign_eval", "defense": "hp_cb_tiny", "benign_eval": "tiny_eval" }
+  ]
+}

@@ -105,6 +105,8 @@ def augment_pair(prompt: str, target: str, seed: Optional[int] = None) -> Tuple[
 def generate_prompt_target_variants(prompt: str, target: str, n: int = 5, seed: Optional[int] = None) -> List[Tuple[str,str]]:
     variants=[]
     rng=random.Random(seed)
+    # always add one base variant, no augmentation
+    variants.append((prompt, target))
     for _ in range(n):
         p,t=augment_pair(prompt,target,seed=rng.randint(0,2**31))
         variants.append((p,t))

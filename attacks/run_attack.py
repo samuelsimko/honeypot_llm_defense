@@ -12,6 +12,7 @@ import pickle
 import logging
 from collections import defaultdict
 from typing import Any, Dict, List, Optional
+import gc
 
 import numpy as np
 import pandas as pd
@@ -113,6 +114,12 @@ def get_attack_class(attack_name: str):
     from attacks.universal_embedding_attack import UniversalEmbeddingAttack
     registry["universal_soft_prompt"] = UniversalEmbeddingAttack
 
+    # from attacks.nanogcg_attack import NanoGCGAttack
+    # registry["nanogcg"] = NanoGCGAttack
+
+    from attacks.grpo_prefill_attack import GRPOEliteAttack
+    registry["grpo_prefill"] = GRPOEliteAttack
+
     if attack_name not in registry:
         raise ValueError(
             f"Unknown attack '{attack_name}'. Available: {list(registry.keys())}"
@@ -204,8 +211,17 @@ def main():
     # Judging
     parser.add_argument("--behavior-label", default="harmful behavior")
 
+    parser.add_argument(
+        "--judge-only",
+        action="store_true",
+        help="Skip attack generation; only run judging + stats from existing completions.pkl",
+    )
+
     args = parser.parse_args()
     os.makedirs(args.output_dir, exist_ok=True)
+
+    if args.lora and not os.path.exists(args.lora):
+        raise RuntimeError(f"Expected LoRA adapter at {args.lora}, but it does not exist.")
 
     completions_path = os.path.join(args.output_dir, "completions.pkl")
     judged_path = os.path.join(args.output_dir, "judged.pkl")
@@ -218,6 +234,8 @@ def main():
     df = df[df["FunctionalCategory"] == "standard"].reset_index(drop=True)
     if args.limit:
         df = df.head(args.limit)
+        print("Limited to %d rows", args.limit)
+        print(df.head())
 
     targets_map = json.load(open(args.harmbench_targets))
     attack_configs = load_json_or_jsonl(args.attack_config_path)
@@ -228,93 +246,125 @@ def main():
     # --------------------------------------------------------
     # Load model
     # --------------------------------------------------------
-    model, tokenizer = load_model_and_tokenizer(
-        args.model,
-        lora_path=args.lora,
-        device=args.device,
-        torch_dtype=args.torch_dtype,
-    )
+    model = None
+    tokenizer = None
+
+    if not args.judge_only:
+        model, tokenizer = load_model_and_tokenizer(
+            args.model,
+            lora_path=args.lora,
+            device=args.device,
+            torch_dtype=args.torch_dtype,
+        )
+        print("Loaded model with lora: ", args.lora)
 
     # --------------------------------------------------------
     # Generation
     # --------------------------------------------------------
-    completions = load_pickle(completions_path) if os.path.exists(completions_path) else []
-    done_keys = {(c["attack_config_id"], c["behavior_id"], c["variant_id"]) for c in completions}
+    if not args.judge_only:
+        completions = load_pickle(completions_path) if os.path.exists(completions_path) else []
 
-    AttackCls = get_attack_class(args.attack)
-    init_prompts = [r.Behavior for r in df.itertuples()]
+        AttackCls = get_attack_class(args.attack)
+        init_prompts = [r.Behavior for r in df.itertuples()]
 
-    for cfg_id, cfg in enumerate(tqdm.tqdm(attack_configs, desc="Attack configs")):
-        training_data = load_training_data(cfg.get("training_data", {}))
-        hyper = cfg.get("hyperparams", cfg)
+        for cfg_id, cfg in enumerate(tqdm.tqdm(attack_configs, desc="Attack configs")):
+            training_data = load_training_data(cfg.get("training_data", {}))
+            hyper = cfg.get("hyperparams", cfg)
 
-        attack = AttackCls(
-            model=model,
-            tokenizer=tokenizer,
-            device=args.device,
-            **training_data,
-            **hyper,
-        )
+            attack = AttackCls(
+                model=model,
+                tokenizer=tokenizer,
+                device=args.device,
+                **training_data,
+                **hyper,
+            )
 
-        attack.initialize()
+            attack.initialize()
 
-        for i, row in enumerate(tqdm.tqdm(df.itertuples(), total=len(df), desc="Behaviors", leave=False)):
-            bid = row.BehaviorID
-            prompt = row.Behavior
-            target = targets_map.get(bid)
-            if target is None:
-                continue
-
-            variants = [(prompt, target)] if args.num_variants == 1 else [
-                (prompt, target) for _ in range(args.num_variants)
-            ]
-
-            for v_id, (p, t) in enumerate(variants):
-                key = (cfg_id, bid, v_id)
-                if key in done_keys:
+            for i, row in enumerate(tqdm.tqdm(df.itertuples(), total=len(df), desc="Behaviors", leave=False)):
+                bid = row.BehaviorID
+                prompt = row.Behavior
+                target = targets_map.get(bid)
+                if target is None:
                     continue
 
-                out = attack.run_example(
-                    prompt=p,
-                    behavior_id=bid,
-                    target=t,
-                    variant_id=v_id,
-                )
-                out = normalize_attack_output(out, p)
+                variants = [(prompt, target)] if args.num_variants == 1 else [
+                    (prompt, target) for _ in range(args.num_variants)
+                ]
 
-                completions.append({
-                    "attack": args.attack,
-                    "attack_config_id": cfg_id,
-                    "attack_config": cfg,
-                    "behavior_id": bid,
-                    "variant_id": v_id,
-                    "prompt": out["prompt"],
-                    "target": t,
-                    "generated": out["generated"],
-                    "attack_metadata": out["attack_metadata"],
-                })
-                done_keys.add(key)
+                for v_id, (p, t) in enumerate(variants):
 
-            if (i + 1) % args.save_every == 0:
-                save_pickle(completions, completions_path)
+                    out = attack.run_example(
+                        prompt=p,
+                        behavior_id=bid,
+                        target=t,
+                        variant_id=v_id,
+                    )
+                    print("Prompt: ", p)
+                    print("Generated: ", out["generated"])
 
-        save_pickle(completions, completions_path)
+                    out = normalize_attack_output(out, p)
 
-    LOGGER.info("Saved %d completions", len(completions))
+                    completions.append({
+                        "attack": args.attack,
+                        "attack_config_id": cfg_id,
+                        "attack_config": cfg,
+                        "behavior_id": bid,
+                        "variant_id": v_id,
+                        "prompt": out["prompt"],
+                        "target": t,
+                        "generated": out["generated"],
+                        "attack_metadata": out["attack_metadata"],
+                    })
 
+                if (i + 1) % args.save_every == 0:
+                    save_pickle(completions, completions_path)
+
+            save_pickle(completions, completions_path)
+
+        LOGGER.info("Saved %d completions", len(completions))
+
+        # Free attack model
+        del model
+        del tokenizer
+        # free attack
+        del attack
+
+        torch.cuda.empty_cache()
+        gc.collect()
+
+    else:
+        if not os.path.exists(completions_path):
+            raise FileNotFoundError(
+                f"--judge-only specified but completions.pkl not found in {args.output_dir}"
+            )
+
+        completions = load_pickle(completions_path)
+        LOGGER.info("Loaded %d existing completions (judge-only mode)", len(completions))
+
+    # Judging (BATCHED, SAFE)
     # --------------------------------------------------------
-    # Judging
-    # --------------------------------------------------------
+
+    torch.cuda.empty_cache()
+    gc.collect()
+
+    prompts = [c["prompt"] for c in completions]
+    responses = [c["generated"] for c in completions]
+
+    raw_results = judge_sequence(
+        prompts,
+        responses,
+        behavior=args.behavior_label,
+    )
+
     judged = []
-    for c in tqdm.tqdm(completions, desc="Judging"):
-        j = judge_sequence([c["prompt"]], [c["generated"]], behavior=args.behavior_label)[0]
+    for c, j in zip(completions, raw_results):
         c = dict(c)
         c["judge_raw"] = j
         c["judge_norm"] = normalize_judge_result(j)
         judged.append(c)
 
     save_pickle(judged, judged_path)
-
     # --------------------------------------------------------
     # Stats
     # --------------------------------------------------------

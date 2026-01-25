@@ -1,11 +1,11 @@
 [
   {
-    "num_steps": 10,
-    "num_tokens": 4,
-    "lr": 0.05,
-    "optim_str_init": "x x x x",
+    "num_steps": 500,
+    "num_tokens": 10,
+    "lr": 0.001,
+    "optim_str_init": "x x x x x x x x x x",
     "rand_init": false,
-    "early_stop_loss": 0.0,
+    "early_stop_loss": 0.001,
     "variant_count": 1,
     "pick_best": "min_final_loss"
   }

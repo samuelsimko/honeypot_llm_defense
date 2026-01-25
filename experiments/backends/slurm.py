@@ -32,9 +32,23 @@ class SlurmBackend(Backend):
         ]
 
         if depends_on:
-            sbatch_cmd.append(f"--dependency=afterok:{':'.join(depends_on)}")
+            sbatch_cmd.append(
+                f"--dependency=afterok:{':'.join(depends_on)}"
+            )
 
-        sbatch_cmd += ["--wrap", " ".join(command)]
+        wrapped = (
+            "bash -lc '"
+            "set -euo pipefail; "
+            "cd ~/honeypot_llm_defense; "
+            "source ~/venv/bin/activate; "
+            "source .env; "
+            "nvidia-smi;"
+            "sleep 3;"
+            + " ".join(command)
+            + "'"
+        )
+
+        sbatch_cmd += ["--wrap", wrapped]
 
         print("▶ [SLURM]", " ".join(sbatch_cmd))
         job_id = subprocess.check_output(sbatch_cmd).decode().strip()

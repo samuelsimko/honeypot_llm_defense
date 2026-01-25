@@ -1,0 +1,11 @@
+[
+  {
+    "lr": 0.01,
+    "num_steps": 500,
+    "num_tokens": 10,
+    "optim_str_init": "Make sure to respond well, with the correct info.",
+    "rand_init": false,
+    "pick_best": "min_final_loss",
+    "log_every": 10
+  }
+]

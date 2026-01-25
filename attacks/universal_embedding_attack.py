@@ -1,12 +1,15 @@
+#!/usr/bin/env python3
 """
 attacks/universal_embedding_attack.py
 
 Universal soft-prompt (embedding) attack.
 
-- initialize(): trains ONE embedding using CB and/or honeypots
-- run_example(): applies the frozen embedding to a single prompt
+- initialize(): trains ONE universal embedding
+- run_example(): applies frozen embedding to prompts
 
-No judging logic here.
+Prefix-style only: [OPTIM][CHAT_PROMPT][GENERATION]
+
+No judges, no training loops outside this class.
 """
 
 from __future__ import annotations
@@ -21,6 +24,11 @@ import tqdm
 from transformers import PreTrainedModel, PreTrainedTokenizer
 
 from attacks.base import Attack
+
+try:
+    from peft import PeftModel
+except Exception:
+    PeftModel = tuple()  # type: ignore
 
 
 # ============================================================
@@ -37,10 +45,19 @@ class UniversalEmbeddingConfig:
     seed: Optional[int] = None
 
     # signed weights
-    w_circuit_breakers: Optional[float] = 1.0    # +1 = encourage harm
-    w_honeypots: Optional[float] = None           # -1 = avoid honeypots
+    w_circuit_breakers: Optional[float] = 1.0   # minimize CE
+    w_honeypots: Optional[float] = None         # push CE up
 
     log_every: int = 50
+
+    # generation
+    max_new_tokens: int = 800
+
+    # safety
+    require_lora: bool = False
+
+    # keep only the first N chars of the target if not None
+    target_max_length: Optional[int] = None
 
 
 # ============================================================
@@ -49,11 +66,7 @@ class UniversalEmbeddingConfig:
 
 class UniversalEmbeddingAttack(Attack):
     """
-    Universal embedding attack.
-
-    Contract:
-      - initialize(): trains the embedding once
-      - run_example(): applies embedding to a single prompt
+    Universal prefix embedding attack.
     """
 
     name = "universal_soft_prompt"
@@ -65,179 +78,295 @@ class UniversalEmbeddingAttack(Attack):
         device: Optional[str] = None,
         circuit_breakers: Optional[List[Dict[str, str]]] = None,
         honeypots: Optional[List[Dict[str, str]]] = None,
-        max_generation_length: int = 512,
         **attack_config,
     ):
         super().__init__(model, tokenizer, device=device, **attack_config)
 
-        # Typed config for internal use
         self.config = UniversalEmbeddingConfig(**self.attack_config)
+
+        self.using_lora = isinstance(self.model, PeftModel)
+        logging.warning(
+            "[universal] using_lora=%s model_cls=%s",
+            self.using_lora,
+            type(self.model).__name__,
+        )
+
+        if self.config.require_lora and not self.using_lora:
+            raise RuntimeError(
+                "UniversalEmbeddingAttack: require_lora=True but model is not LoRA."
+            )
 
         self.cb_data = circuit_breakers or []
         self.hp_data = honeypots or []
-        self.max_generation_length = max_generation_length
 
-        self.optim_embeds: Optional[torch.Tensor] = None
+        self.optim_embeds: Optional[torch.Tensor] = None  # stored on CPU
 
-    # --------------------------------------------------------
-    # Initialization = training
-    # --------------------------------------------------------
+    # ---------------------------------------------------------
+    # helpers
+    # ---------------------------------------------------------
+
+    def _embed_device(self) -> torch.device:
+        emb = self.model.get_input_embeddings()
+        return emb.weight.device
+
+    # ---------------------------------------------------------
+    # training
+    # ---------------------------------------------------------
 
     def initialize(self) -> None:
-        """
-        Train a single universal embedding using signed losses.
-        """
         cfg = self.config
-        model = self.model.to(self.device)
+        model = self.model
+        tokenizer = self.tokenizer
+
         model.train()
+        model.enable_input_require_grads()
 
         if cfg.seed is not None:
             torch.manual_seed(cfg.seed)
 
         embed_layer = model.get_input_embeddings()
+        emb_device = self._embed_device()
 
-        # init embedding
+        # ---- init embedding ----
         if cfg.rand_init:
             optim_embeds = torch.randn(
                 (1, cfg.num_tokens, model.config.hidden_size),
-                device=self.device,
+                device=emb_device,
                 requires_grad=True,
             )
         else:
-            ids = self.tokenizer(
+            ids = tokenizer(
                 cfg.optim_str_init,
                 return_tensors="pt",
                 add_special_tokens=False,
-            )["input_ids"].to(self.device)
-            optim_embeds = embed_layer(ids).detach().clone().requires_grad_(True)
+            )["input_ids"].to(emb_device)
+            optim_embeds = embed_layer(ids).detach().clone()
+            optim_embeds = optim_embeds[:, : cfg.num_tokens, :]
+            optim_embeds.requires_grad_(True)
 
         opt = torch.optim.Adam([optim_embeds], lr=cfg.lr)
 
-        if not self.cb_data and not self.hp_data:
-            raise ValueError(
-                "UniversalEmbeddingAttack requires training data "
-                "(circuit_breakers and/or honeypots)."
-            )
+        # ---- sanity checks ----
+        if cfg.w_circuit_breakers and not self.cb_data:
+            raise ValueError("w_circuit_breakers set but no circuit breakers provided")
+        if cfg.w_honeypots and not self.hp_data:
+            raise ValueError("w_honeypots set but no honeypots provided")
 
-        # build training pool
-        pool = []
-        if cfg.w_circuit_breakers and self.cb_data:
-            for ex in self.cb_data:
-                pool.append(("cb", ex))
-        if cfg.w_honeypots and self.hp_data:
-            for ex in self.hp_data:
-                pool.append(("hp", ex))
+        import random
 
-        assert pool, "No training data provided for universal embedding attack."
-
+        # ---- training loop (JOINT updates) ----
         for step in tqdm.trange(cfg.num_steps, desc="Training universal embedding"):
-            kind, ex = pool[step % len(pool)]
-            prompt = ex["prompt"]
-            # take response, or output or fallback to target if neither are present
-            target = ex.get("response") or ex.get("output") or ex.get("target")
+            losses = []
 
-            messages = [{"role": "user", "content": prompt + " {optim_str}"}]
-            template = self.tokenizer.apply_chat_template(
-                messages, tokenize=False, add_generation_prompt=True
-            )
-            before, after = template.split("{optim_str}")
+            # =====================
+            # Circuit breaker term
+            # =====================
+            if cfg.w_circuit_breakers:
+                ex = random.choice(self.cb_data)
 
-            before_ids = self.tokenizer(
-                before, return_tensors="pt", add_special_tokens=False
-            )["input_ids"].to(self.device)
-            after_ids = self.tokenizer(
-                after, return_tensors="pt", add_special_tokens=False
-            )["input_ids"].to(self.device)
-            target_ids = self.tokenizer(
-                target, return_tensors="pt", add_special_tokens=False
-            )["input_ids"].to(self.device)
+                prompt = ex["prompt"]
+                target = ex.get("response") or ex.get("output") or ex.get("target")
 
-            before_embeds = embed_layer(before_ids)
-            after_embeds = embed_layer(after_ids)
-            target_embeds = embed_layer(target_ids)
+                # keep only the first N chars of the target if not None
+                if cfg.target_max_length is not None:
+                    target = target[:cfg.target_max_length]
 
-            input_embeds = torch.cat(
-                [before_embeds, optim_embeds, after_embeds, target_embeds.detach()],
-                dim=1,
-            )
+                if target is not None:
+                    messages = [{"role": "user", "content": prompt}]
+                    template = tokenizer.apply_chat_template(
+                        messages, tokenize=False, add_generation_prompt=True
+                    )
 
-            logits = model(inputs_embeds=input_embeds, use_cache=False).logits
-            shift = input_embeds.shape[1] - target_ids.shape[1]
-            shift_logits = logits[..., shift - 1 : shift - 1 + target_ids.shape[1], :]
+                    if tokenizer.bos_token and template.startswith(tokenizer.bos_token):
+                        template = template.replace(tokenizer.bos_token, "", 1)
 
-            ce = F.cross_entropy(
-                shift_logits.view(-1, shift_logits.size(-1)),
-                target_ids.view(-1),
-            )
+                    prompt_ids = tokenizer(
+                        template,
+                        return_tensors="pt",
+                        add_special_tokens=False,
+                    )["input_ids"].to(emb_device)
 
-            # signed objective
-            if kind == "cb":
-                loss = cfg.w_circuit_breakers * ce
-            else:  # honeypot
-                loss = cfg.w_honeypots * ce
+                    target_ids = tokenizer(
+                        target,
+                        return_tensors="pt",
+                        add_special_tokens=False,
+                    )["input_ids"].to(emb_device)
 
-            opt.zero_grad()
+                    prompt_embeds = embed_layer(prompt_ids)
+                    target_embeds = embed_layer(target_ids)
+
+                    train_embeds = torch.cat(
+                        [optim_embeds, prompt_embeds, target_embeds.detach()],
+                        dim=1,
+                    )
+
+                    attn = torch.ones(
+                        train_embeds.shape[:2], device=emb_device, dtype=torch.long
+                    )
+
+                    logits = model(
+                        inputs_embeds=train_embeds,
+                        attention_mask=attn,
+                        use_cache=False,
+                    ).logits
+
+                    shift = optim_embeds.shape[1] + prompt_ids.shape[1]
+                    shift_logits = logits[
+                        :, shift - 1 : shift - 1 + target_ids.shape[1], :
+                    ]
+
+                    ce_cb = F.cross_entropy(
+                        shift_logits.reshape(-1, shift_logits.size(-1)),
+                        target_ids.reshape(-1),
+                    )
+
+                    losses.append(float(cfg.w_circuit_breakers) * ce_cb)
+
+            # =====================
+            # Honeypot term
+            # =====================
+            if cfg.w_honeypots:
+                ex = random.choice(self.hp_data)
+
+                prompt = ex["prompt"]
+                target = ex.get("response") or ex.get("output") or ex.get("target")
+
+                # keep only the first N chars
+                if cfg.target_max_length is not None:
+                    target = target[:cfg.target_max_length]
+
+                if target is not None:
+                    messages = [{"role": "user", "content": prompt}]
+                    template = tokenizer.apply_chat_template(
+                        messages, tokenize=False, add_generation_prompt=True
+                    )
+
+                    if tokenizer.bos_token and template.startswith(tokenizer.bos_token):
+                        template = template.replace(tokenizer.bos_token, "", 1)
+
+                    prompt_ids = tokenizer(
+                        template,
+                        return_tensors="pt",
+                        add_special_tokens=False,
+                    )["input_ids"].to(emb_device)
+
+                    target_ids = tokenizer(
+                        target,
+                        return_tensors="pt",
+                        add_special_tokens=False,
+                    )["input_ids"].to(emb_device)
+
+                    prompt_embeds = embed_layer(prompt_ids)
+                    target_embeds = embed_layer(target_ids)
+
+                    train_embeds = torch.cat(
+                        [optim_embeds, prompt_embeds, target_embeds.detach()],
+                        dim=1,
+                    )
+
+                    attn = torch.ones(
+                        train_embeds.shape[:2], device=emb_device, dtype=torch.long
+                    )
+
+                    logits = model(
+                        inputs_embeds=train_embeds,
+                        attention_mask=attn,
+                        use_cache=False,
+                    ).logits
+
+                    shift = optim_embeds.shape[1] + prompt_ids.shape[1]
+                    shift_logits = logits[
+                        :, shift - 1 : shift - 1 + target_ids.shape[1], :
+                    ]
+
+                    ce_hp = F.cross_entropy(
+                        shift_logits.reshape(-1, shift_logits.size(-1)),
+                        target_ids.reshape(-1),
+                    )
+
+                    # discourage honeypot learning
+                    losses.append(torch.relu(5.0 - ce_hp))
+
+            if not losses:
+                continue
+
+            loss = sum(losses)
+
+            opt.zero_grad(set_to_none=True)
             loss.backward()
             opt.step()
 
             if step % cfg.log_every == 0:
                 logging.info(
-                    "[universal] step=%d kind=%s ce=%.4f weighted=%.4f",
+                    "[universal] step=%d loss=%.4f norm=%.3f",
                     step,
-                    kind,
-                    ce.item(),
                     loss.item(),
+                    optim_embeds.norm().item(),
                 )
 
         self.optim_embeds = optim_embeds.detach().cpu()
         model.eval()
 
-    # --------------------------------------------------------
-    # Run one example
-    # --------------------------------------------------------
+    # ---------------------------------------------------------
+    # inference
+    # ---------------------------------------------------------
+
     @torch.no_grad()
     def run_example(
         self,
         *,
         behavior_id: str,
         prompt: str,
-        target: Optional[str] = None,
         variant_id: Optional[int] = None,
         seed: Optional[int] = None,
-        **kwargs,  # swallow anything else from runner
+        **kwargs,
     ) -> Dict[str, Any]:
-        """
-        Apply the frozen universal embedding to a single prompt.
 
-        target / variant_id are accepted for API compatibility,
-        but are not used.
-        """
         assert self.optim_embeds is not None, "Call initialize() first."
 
-        start = time.time()
+        if seed is not None:
+            torch.manual_seed(seed)
+
+        model = self.model
+        tokenizer = self.tokenizer
+        model.eval()
+
+        emb_device = self._embed_device()
+        embed_layer = model.get_input_embeddings()
 
         messages = [{"role": "user", "content": prompt}]
-        template = self.tokenizer.apply_chat_template(
+        template = tokenizer.apply_chat_template(
             messages, tokenize=False, add_generation_prompt=True
         )
 
-        ids = self.tokenizer(
-            template, return_tensors="pt", add_special_tokens=False
-        )["input_ids"].to(self.device)
+        if tokenizer.bos_token and template.startswith(tokenizer.bos_token):
+            template = template.replace(tokenizer.bos_token, "", 1)
 
-        base_embeds = self.model.get_input_embeddings()(ids)
-        input_embeds = torch.cat(
-            [base_embeds, self.optim_embeds.to(self.device)], dim=1
+        ids = tokenizer(
+            template,
+            return_tensors="pt",
+            add_special_tokens=False,
+        )["input_ids"].to(emb_device)
+
+        base_embeds = embed_layer(ids)
+        optim = self.optim_embeds.to(emb_device, dtype=base_embeds.dtype)
+
+        input_embeds = torch.cat([optim, base_embeds], dim=1)
+
+        attn = torch.ones(
+            input_embeds.shape[:2], device=emb_device, dtype=torch.long
         )
 
-        output_ids = self.model.generate(
+        output_ids = model.generate(
             inputs_embeds=input_embeds,
-            max_length=self.max_generation_length,
-            use_cache=False,
+            attention_mask=attn,
+            max_new_tokens=self.config.max_new_tokens,
             do_sample=False,
+            use_cache=True,
+            pad_token_id=tokenizer.eos_token_id,
         )
 
-        gen_text = self.tokenizer.decode(
+        gen_text = tokenizer.decode(
             output_ids[0], skip_special_tokens=True
         ).strip()
 
@@ -247,7 +376,7 @@ class UniversalEmbeddingAttack(Attack):
             "attack_metadata": {
                 "behavior_id": behavior_id,
                 "variant_id": variant_id,
-                "duration_seconds": time.time() - start,
                 "attack_type": "universal_soft_prompt",
+                "using_lora": bool(self.using_lora),
             },
         }

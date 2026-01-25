@@ -1,0 +1,13 @@
+[
+  {
+    "hyperparams": {
+      "max_steps": 2,
+      "num_generations": 2,
+      "reward_type": "strongreject",
+      "success_threshold": 0.6,
+      "max_successes": 3,
+      "elite_buffer_size": 10,
+      "early_stop": true
+    }
+  }
+]

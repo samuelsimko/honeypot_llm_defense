@@ -121,10 +121,14 @@ def run_soft_opt(
     else:
         optim_embeds = torch.randn((1, config.num_tokens, model.config.hidden_size), device=device).requires_grad_(True)
 
+    dtype = model.get_input_embeddings().weight.dtype
+    optim_embeds = optim_embeds.to(dtype).detach().requires_grad_(True)
+
     opt = torch.optim.Adam([optim_embeds], lr=config.lr)
     losses: List[float] = []
 
     # We train on (prefix + optim + suffix + target), but we only generate from (prefix + optim + suffix)
+    config.verbose = False
     for step in tqdm.tqdm(range(config.num_steps), disable=not config.verbose):
         opt.zero_grad(set_to_none=True)
 
@@ -180,7 +184,7 @@ class SoftPromptAttack:
         tokenizer: PreTrainedTokenizer,
         *,
         device: Optional[str] = None,
-        max_generation_length: int = 512,
+        max_generation_length: int = 1536,
         pick_best: str = "min_final_loss",
         **attack_config,   # NEW
     ):

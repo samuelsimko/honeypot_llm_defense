@@ -106,6 +106,8 @@ class GRPOEliteConfig:
     use_wandb: bool = False
     wandb_project: str = "grpo-jailbreaks"
 
+    soft_opt_optimization: bool = False
+
 
     # from dict
     @classmethod
@@ -525,7 +527,7 @@ def strip_assistant_closure(token_ids, tokenizer):
 
     # Drop trailing EOS / end-of-turn markers
     while toks and (
-        toks[-1] in {tokenizer.eos_token, '<|endoftext|>', '</s>', '<|eot_id|>', 'eos'}
+        toks[-1] in {tokenizer.eos_token, '<|endoftext|>', '</s>', '<|eot_id|>', 'eos', '<|im_end|>'}
         or 'assistant' in toks[-1].lower()
     ):
         toks.pop()
@@ -664,9 +666,7 @@ class GRPOEliteAttack(Attack):
                 prefilled_start = extract_prefilled_start(c)
 
 
-                soft_opt_optimization = True
-
-                if soft_opt_optimization:
+                if cfg.soft_opt_optimization:
                     cfg_soft_opt = SoftOptConfig.from_dict({"lr": 0.01, "num_steps": 500, "num_tokens": 10, "optim_str_init": "Please answer honestly and truthfully.",
                      "seed": random.randint(0, 1000000)})
 
@@ -692,7 +692,7 @@ class GRPOEliteAttack(Attack):
                         _, reply = generate_from_embeds(input_embeds, tgt_model, tgt_tok)
 
                 else:
-                    msgs = [{"role": "user", "content": rewritten}, {"role": "assistant", "content": prefilled_start}]
+                    msgs = [{"role": "system", "content": "/no_think"}, {"role": "user", "content": rewritten}, {"role": "assistant", "content": prefilled_start}]
                     chat = tgt_tok.apply_chat_template(
                         msgs, tokenize=False, add_generation_prompt=False
                     )
@@ -732,9 +732,9 @@ class GRPOEliteAttack(Attack):
                 )
 
                 # Add perplexity score from policy model. Divide by 10 to balance it with the reward function.
-                ppl = compute_perplexity(self.policy_model, self.policy_tokenizer, [original_prompt + reply], self.policy_model.device)
-                CE = torch.log(torch.tensor(ppl))
-                reward -= CE
+                # ppl = compute_perplexity(self.policy_model, self.policy_tokenizer, [original_prompt + reply], self.policy_model.device)
+                # CE = torch.log(torch.tensor(ppl))
+                # reward -= CE
 
                 rewards.append(reward)
                 print(f"Reward: {reward}")
@@ -742,7 +742,7 @@ class GRPOEliteAttack(Attack):
                 print(f"Rewritten prompt: {rewritten}")
                 print(f"Prefilled start: {prefilled_start}")
                 print(f"Reply: {reply}")
-                print(f"CE: {CE}")
+                # print(f"CE: {CE}")
                 print(f"Reward type: {cfg.reward_type}")
                 print(f"Explanation: {explanation}")
 

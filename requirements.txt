@@ -100,7 +100,6 @@ msgspec==0.19.0
 multidict==6.6.2
 multiprocess==0.70.16
 murmurhash==1.0.13
--e git+https://github.com/GraySwanAI/nanoGCG.git@d4a20a8b4a12c3ee814a77a61423b7bdcd151f82#egg=nanogcg
 networkx==3.4.2
 ninja==1.13.0
 nltk==3.9.2

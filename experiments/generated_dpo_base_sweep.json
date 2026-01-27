@@ -1,0 +1,970 @@
+{
+  "meta": {
+    "experiment_name": "dpo_base_threshold_dpo_sweep",
+    "output_root": "runs/experiments"
+  },
+  "models": {
+    "llama3_8b": {
+      "hf_id": "meta-llama/Meta-Llama-3-8B-Instruct"
+    },
+    "qwen3_8b": {
+      "hf_id": "Qwen/Qwen3-8B"
+    }
+  },
+  "datasets": {
+    "harmbench_csv": "data/harmbench_behaviors_text_val.csv",
+    "harmbench_targets": "data/harmbench_targets_text.json"
+  },
+  "defenses": {
+    "base_llama3_8b": {
+      "script": null,
+      "base_model": "llama3_8b",
+      "output_subdir": "base_llama3_8b",
+      "train_args": {}
+    },
+    "base_qwen3_8b": {
+      "script": null,
+      "base_model": "qwen3_8b",
+      "output_subdir": "base_qwen3_8b",
+      "train_args": {}
+    },
+    "dpo_base_llama3_8b_ce10.0_nodpo": {
+      "script": "defenses/dpo_base.py",
+      "base_model": "llama3_8b",
+      "output_subdir": "dpo_base_llama3_8b_ce10.0_nodpo",
+      "data": {
+        "cb_path": "data/circuit_breakers_train.json",
+        "honeypot_path": "data/honeypots_qwen_fixed.jsonl"
+      },
+      "train_args": {
+        "harm_ce_min": 10.0,
+        "hp_ce_min": 10.0,
+        "w_dpo_hp_over_harm": 0.0
+      }
+    },
+    "dpo_base_llama3_8b_ce10.0_dpo_weak": {
+      "script": "defenses/dpo_base.py",
+      "base_model": "llama3_8b",
+      "output_subdir": "dpo_base_llama3_8b_ce10.0_dpo_weak",
+      "data": {
+        "cb_path": "data/circuit_breakers_train.json",
+        "honeypot_path": "data/honeypots_qwen_fixed.jsonl"
+      },
+      "train_args": {
+        "harm_ce_min": 10.0,
+        "hp_ce_min": 10.0,
+        "w_dpo_hp_over_harm": 0.5,
+        "dpo_beta": 1.0,
+        "dpo_margin": 0.0,
+        "dpo_detach_harm": true
+      }
+    },
+    "dpo_base_llama3_8b_ce10.0_dpo_mid": {
+      "script": "defenses/dpo_base.py",
+      "base_model": "llama3_8b",
+      "output_subdir": "dpo_base_llama3_8b_ce10.0_dpo_mid",
+      "data": {
+        "cb_path": "data/circuit_breakers_train.json",
+        "honeypot_path": "data/honeypots_qwen_fixed.jsonl"
+      },
+      "train_args": {
+        "harm_ce_min": 10.0,
+        "hp_ce_min": 10.0,
+        "w_dpo_hp_over_harm": 0.5,
+        "dpo_beta": 2.0,
+        "dpo_margin": 0.5,
+        "dpo_detach_harm": true
+      }
+    },
+    "dpo_base_llama3_8b_ce10.0_dpo_strong": {
+      "script": "defenses/dpo_base.py",
+      "base_model": "llama3_8b",
+      "output_subdir": "dpo_base_llama3_8b_ce10.0_dpo_strong",
+      "data": {
+        "cb_path": "data/circuit_breakers_train.json",
+        "honeypot_path": "data/honeypots_qwen_fixed.jsonl"
+      },
+      "train_args": {
+        "harm_ce_min": 10.0,
+        "hp_ce_min": 10.0,
+        "w_dpo_hp_over_harm": 2.0,
+        "dpo_beta": 5.0,
+        "dpo_margin": 1.0,
+        "dpo_detach_harm": true
+      }
+    },
+    "dpo_base_llama3_8b_ce10.0_dpo_inverse": {
+      "script": "defenses/dpo_base.py",
+      "base_model": "llama3_8b",
+      "output_subdir": "dpo_base_llama3_8b_ce10.0_dpo_inverse",
+      "data": {
+        "cb_path": "data/circuit_breakers_train.json",
+        "honeypot_path": "data/honeypots_qwen_fixed.jsonl"
+      },
+      "train_args": {
+        "harm_ce_min": 10.0,
+        "hp_ce_min": 10.0,
+        "w_dpo_hp_over_harm": -1.0,
+        "dpo_beta": 2.0,
+        "dpo_margin": 1,
+        "dpo_detach_harm": false
+      }
+    },
+    "dpo_base_llama3_8b_ce5.0_nodpo": {
+      "script": "defenses/dpo_base.py",
+      "base_model": "llama3_8b",
+      "output_subdir": "dpo_base_llama3_8b_ce5.0_nodpo",
+      "data": {
+        "cb_path": "data/circuit_breakers_train.json",
+        "honeypot_path": "data/honeypots_qwen_fixed.jsonl"
+      },
+      "train_args": {
+        "harm_ce_min": 5.0,
+        "hp_ce_min": 5.0,
+        "w_dpo_hp_over_harm": 0.0
+      }
+    },
+    "dpo_base_llama3_8b_ce5.0_dpo_weak": {
+      "script": "defenses/dpo_base.py",
+      "base_model": "llama3_8b",
+      "output_subdir": "dpo_base_llama3_8b_ce5.0_dpo_weak",
+      "data": {
+        "cb_path": "data/circuit_breakers_train.json",
+        "honeypot_path": "data/honeypots_qwen_fixed.jsonl"
+      },
+      "train_args": {
+        "harm_ce_min": 5.0,
+        "hp_ce_min": 5.0,
+        "w_dpo_hp_over_harm": 0.5,
+        "dpo_beta": 1.0,
+        "dpo_margin": 0.0,
+        "dpo_detach_harm": true
+      }
+    },
+    "dpo_base_llama3_8b_ce5.0_dpo_mid": {
+      "script": "defenses/dpo_base.py",
+      "base_model": "llama3_8b",
+      "output_subdir": "dpo_base_llama3_8b_ce5.0_dpo_mid",
+      "data": {
+        "cb_path": "data/circuit_breakers_train.json",
+        "honeypot_path": "data/honeypots_qwen_fixed.jsonl"
+      },
+      "train_args": {
+        "harm_ce_min": 5.0,
+        "hp_ce_min": 5.0,
+        "w_dpo_hp_over_harm": 0.5,
+        "dpo_beta": 2.0,
+        "dpo_margin": 0.5,
+        "dpo_detach_harm": true
+      }
+    },
+    "dpo_base_llama3_8b_ce5.0_dpo_strong": {
+      "script": "defenses/dpo_base.py",
+      "base_model": "llama3_8b",
+      "output_subdir": "dpo_base_llama3_8b_ce5.0_dpo_strong",
+      "data": {
+        "cb_path": "data/circuit_breakers_train.json",
+        "honeypot_path": "data/honeypots_qwen_fixed.jsonl"
+      },
+      "train_args": {
+        "harm_ce_min": 5.0,
+        "hp_ce_min": 5.0,
+        "w_dpo_hp_over_harm": 2.0,
+        "dpo_beta": 5.0,
+        "dpo_margin": 1.0,
+        "dpo_detach_harm": true
+      }
+    },
+    "dpo_base_llama3_8b_ce5.0_dpo_inverse": {
+      "script": "defenses/dpo_base.py",
+      "base_model": "llama3_8b",
+      "output_subdir": "dpo_base_llama3_8b_ce5.0_dpo_inverse",
+      "data": {
+        "cb_path": "data/circuit_breakers_train.json",
+        "honeypot_path": "data/honeypots_qwen_fixed.jsonl"
+      },
+      "train_args": {
+        "harm_ce_min": 5.0,
+        "hp_ce_min": 5.0,
+        "w_dpo_hp_over_harm": -1.0,
+        "dpo_beta": 2.0,
+        "dpo_margin": 1,
+        "dpo_detach_harm": false
+      }
+    },
+    "dpo_base_llama3_8b_ce2.5_nodpo": {
+      "script": "defenses/dpo_base.py",
+      "base_model": "llama3_8b",
+      "output_subdir": "dpo_base_llama3_8b_ce2.5_nodpo",
+      "data": {
+        "cb_path": "data/circuit_breakers_train.json",
+        "honeypot_path": "data/honeypots_qwen_fixed.jsonl"
+      },
+      "train_args": {
+        "harm_ce_min": 2.5,
+        "hp_ce_min": 2.5,
+        "w_dpo_hp_over_harm": 0.0
+      }
+    },
+    "dpo_base_llama3_8b_ce2.5_dpo_weak": {
+      "script": "defenses/dpo_base.py",
+      "base_model": "llama3_8b",
+      "output_subdir": "dpo_base_llama3_8b_ce2.5_dpo_weak",
+      "data": {
+        "cb_path": "data/circuit_breakers_train.json",
+        "honeypot_path": "data/honeypots_qwen_fixed.jsonl"
+      },
+      "train_args": {
+        "harm_ce_min": 2.5,
+        "hp_ce_min": 2.5,
+        "w_dpo_hp_over_harm": 0.5,
+        "dpo_beta": 1.0,
+        "dpo_margin": 0.0,
+        "dpo_detach_harm": true
+      }
+    },
+    "dpo_base_llama3_8b_ce2.5_dpo_mid": {
+      "script": "defenses/dpo_base.py",
+      "base_model": "llama3_8b",
+      "output_subdir": "dpo_base_llama3_8b_ce2.5_dpo_mid",
+      "data": {
+        "cb_path": "data/circuit_breakers_train.json",
+        "honeypot_path": "data/honeypots_qwen_fixed.jsonl"
+      },
+      "train_args": {
+        "harm_ce_min": 2.5,
+        "hp_ce_min": 2.5,
+        "w_dpo_hp_over_harm": 0.5,
+        "dpo_beta": 2.0,
+        "dpo_margin": 0.5,
+        "dpo_detach_harm": true
+      }
+    },
+    "dpo_base_llama3_8b_ce2.5_dpo_strong": {
+      "script": "defenses/dpo_base.py",
+      "base_model": "llama3_8b",
+      "output_subdir": "dpo_base_llama3_8b_ce2.5_dpo_strong",
+      "data": {
+        "cb_path": "data/circuit_breakers_train.json",
+        "honeypot_path": "data/honeypots_qwen_fixed.jsonl"
+      },
+      "train_args": {
+        "harm_ce_min": 2.5,
+        "hp_ce_min": 2.5,
+        "w_dpo_hp_over_harm": 2.0,
+        "dpo_beta": 5.0,
+        "dpo_margin": 1.0,
+        "dpo_detach_harm": true
+      }
+    },
+    "dpo_base_llama3_8b_ce2.5_dpo_inverse": {
+      "script": "defenses/dpo_base.py",
+      "base_model": "llama3_8b",
+      "output_subdir": "dpo_base_llama3_8b_ce2.5_dpo_inverse",
+      "data": {
+        "cb_path": "data/circuit_breakers_train.json",
+        "honeypot_path": "data/honeypots_qwen_fixed.jsonl"
+      },
+      "train_args": {
+        "harm_ce_min": 2.5,
+        "hp_ce_min": 2.5,
+        "w_dpo_hp_over_harm": -1.0,
+        "dpo_beta": 2.0,
+        "dpo_margin": 1,
+        "dpo_detach_harm": false
+      }
+    },
+    "dpo_base_qwen3_8b_ce10.0_nodpo": {
+      "script": "defenses/dpo_base.py",
+      "base_model": "qwen3_8b",
+      "output_subdir": "dpo_base_qwen3_8b_ce10.0_nodpo",
+      "data": {
+        "cb_path": "data/circuit_breakers_train.json",
+        "honeypot_path": "data/honeypots_qwen_fixed.jsonl"
+      },
+      "train_args": {
+        "harm_ce_min": 10.0,
+        "hp_ce_min": 10.0,
+        "w_dpo_hp_over_harm": 0.0
+      }
+    },
+    "dpo_base_qwen3_8b_ce10.0_dpo_weak": {
+      "script": "defenses/dpo_base.py",
+      "base_model": "qwen3_8b",
+      "output_subdir": "dpo_base_qwen3_8b_ce10.0_dpo_weak",
+      "data": {
+        "cb_path": "data/circuit_breakers_train.json",
+        "honeypot_path": "data/honeypots_qwen_fixed.jsonl"
+      },
+      "train_args": {
+        "harm_ce_min": 10.0,
+        "hp_ce_min": 10.0,
+        "w_dpo_hp_over_harm": 0.5,
+        "dpo_beta": 1.0,
+        "dpo_margin": 0.0,
+        "dpo_detach_harm": true
+      }
+    },
+    "dpo_base_qwen3_8b_ce10.0_dpo_mid": {
+      "script": "defenses/dpo_base.py",
+      "base_model": "qwen3_8b",
+      "output_subdir": "dpo_base_qwen3_8b_ce10.0_dpo_mid",
+      "data": {
+        "cb_path": "data/circuit_breakers_train.json",
+        "honeypot_path": "data/honeypots_qwen_fixed.jsonl"
+      },
+      "train_args": {
+        "harm_ce_min": 10.0,
+        "hp_ce_min": 10.0,
+        "w_dpo_hp_over_harm": 0.5,
+        "dpo_beta": 2.0,
+        "dpo_margin": 0.5,
+        "dpo_detach_harm": true
+      }
+    },
+    "dpo_base_qwen3_8b_ce10.0_dpo_strong": {
+      "script": "defenses/dpo_base.py",
+      "base_model": "qwen3_8b",
+      "output_subdir": "dpo_base_qwen3_8b_ce10.0_dpo_strong",
+      "data": {
+        "cb_path": "data/circuit_breakers_train.json",
+        "honeypot_path": "data/honeypots_qwen_fixed.jsonl"
+      },
+      "train_args": {
+        "harm_ce_min": 10.0,
+        "hp_ce_min": 10.0,
+        "w_dpo_hp_over_harm": 2.0,
+        "dpo_beta": 5.0,
+        "dpo_margin": 1.0,
+        "dpo_detach_harm": true
+      }
+    },
+    "dpo_base_qwen3_8b_ce10.0_dpo_inverse": {
+      "script": "defenses/dpo_base.py",
+      "base_model": "qwen3_8b",
+      "output_subdir": "dpo_base_qwen3_8b_ce10.0_dpo_inverse",
+      "data": {
+        "cb_path": "data/circuit_breakers_train.json",
+        "honeypot_path": "data/honeypots_qwen_fixed.jsonl"
+      },
+      "train_args": {
+        "harm_ce_min": 10.0,
+        "hp_ce_min": 10.0,
+        "w_dpo_hp_over_harm": -1.0,
+        "dpo_beta": 2.0,
+        "dpo_margin": 1,
+        "dpo_detach_harm": false
+      }
+    },
+    "dpo_base_qwen3_8b_ce5.0_nodpo": {
+      "script": "defenses/dpo_base.py",
+      "base_model": "qwen3_8b",
+      "output_subdir": "dpo_base_qwen3_8b_ce5.0_nodpo",
+      "data": {
+        "cb_path": "data/circuit_breakers_train.json",
+        "honeypot_path": "data/honeypots_qwen_fixed.jsonl"
+      },
+      "train_args": {
+        "harm_ce_min": 5.0,
+        "hp_ce_min": 5.0,
+        "w_dpo_hp_over_harm": 0.0
+      }
+    },
+    "dpo_base_qwen3_8b_ce5.0_dpo_weak": {
+      "script": "defenses/dpo_base.py",
+      "base_model": "qwen3_8b",
+      "output_subdir": "dpo_base_qwen3_8b_ce5.0_dpo_weak",
+      "data": {
+        "cb_path": "data/circuit_breakers_train.json",
+        "honeypot_path": "data/honeypots_qwen_fixed.jsonl"
+      },
+      "train_args": {
+        "harm_ce_min": 5.0,
+        "hp_ce_min": 5.0,
+        "w_dpo_hp_over_harm": 0.5,
+        "dpo_beta": 1.0,
+        "dpo_margin": 0.0,
+        "dpo_detach_harm": true
+      }
+    },
+    "dpo_base_qwen3_8b_ce5.0_dpo_mid": {
+      "script": "defenses/dpo_base.py",
+      "base_model": "qwen3_8b",
+      "output_subdir": "dpo_base_qwen3_8b_ce5.0_dpo_mid",
+      "data": {
+        "cb_path": "data/circuit_breakers_train.json",
+        "honeypot_path": "data/honeypots_qwen_fixed.jsonl"
+      },
+      "train_args": {
+        "harm_ce_min": 5.0,
+        "hp_ce_min": 5.0,
+        "w_dpo_hp_over_harm": 0.5,
+        "dpo_beta": 2.0,
+        "dpo_margin": 0.5,
+        "dpo_detach_harm": true
+      }
+    },
+    "dpo_base_qwen3_8b_ce5.0_dpo_strong": {
+      "script": "defenses/dpo_base.py",
+      "base_model": "qwen3_8b",
+      "output_subdir": "dpo_base_qwen3_8b_ce5.0_dpo_strong",
+      "data": {
+        "cb_path": "data/circuit_breakers_train.json",
+        "honeypot_path": "data/honeypots_qwen_fixed.jsonl"
+      },
+      "train_args": {
+        "harm_ce_min": 5.0,
+        "hp_ce_min": 5.0,
+        "w_dpo_hp_over_harm": 2.0,
+        "dpo_beta": 5.0,
+        "dpo_margin": 1.0,
+        "dpo_detach_harm": true
+      }
+    },
+    "dpo_base_qwen3_8b_ce5.0_dpo_inverse": {
+      "script": "defenses/dpo_base.py",
+      "base_model": "qwen3_8b",
+      "output_subdir": "dpo_base_qwen3_8b_ce5.0_dpo_inverse",
+      "data": {
+        "cb_path": "data/circuit_breakers_train.json",
+        "honeypot_path": "data/honeypots_qwen_fixed.jsonl"
+      },
+      "train_args": {
+        "harm_ce_min": 5.0,
+        "hp_ce_min": 5.0,
+        "w_dpo_hp_over_harm": -1.0,
+        "dpo_beta": 2.0,
+        "dpo_margin": 1,
+        "dpo_detach_harm": false
+      }
+    },
+    "dpo_base_qwen3_8b_ce2.5_nodpo": {
+      "script": "defenses/dpo_base.py",
+      "base_model": "qwen3_8b",
+      "output_subdir": "dpo_base_qwen3_8b_ce2.5_nodpo",
+      "data": {
+        "cb_path": "data/circuit_breakers_train.json",
+        "honeypot_path": "data/honeypots_qwen_fixed.jsonl"
+      },
+      "train_args": {
+        "harm_ce_min": 2.5,
+        "hp_ce_min": 2.5,
+        "w_dpo_hp_over_harm": 0.0
+      }
+    },
+    "dpo_base_qwen3_8b_ce2.5_dpo_weak": {
+      "script": "defenses/dpo_base.py",
+      "base_model": "qwen3_8b",
+      "output_subdir": "dpo_base_qwen3_8b_ce2.5_dpo_weak",
+      "data": {
+        "cb_path": "data/circuit_breakers_train.json",
+        "honeypot_path": "data/honeypots_qwen_fixed.jsonl"
+      },
+      "train_args": {
+        "harm_ce_min": 2.5,
+        "hp_ce_min": 2.5,
+        "w_dpo_hp_over_harm": 0.5,
+        "dpo_beta": 1.0,
+        "dpo_margin": 0.0,
+        "dpo_detach_harm": true
+      }
+    },
+    "dpo_base_qwen3_8b_ce2.5_dpo_mid": {
+      "script": "defenses/dpo_base.py",
+      "base_model": "qwen3_8b",
+      "output_subdir": "dpo_base_qwen3_8b_ce2.5_dpo_mid",
+      "data": {
+        "cb_path": "data/circuit_breakers_train.json",
+        "honeypot_path": "data/honeypots_qwen_fixed.jsonl"
+      },
+      "train_args": {
+        "harm_ce_min": 2.5,
+        "hp_ce_min": 2.5,
+        "w_dpo_hp_over_harm": 0.5,
+        "dpo_beta": 2.0,
+        "dpo_margin": 0.5,
+        "dpo_detach_harm": true
+      }
+    },
+    "dpo_base_qwen3_8b_ce2.5_dpo_strong": {
+      "script": "defenses/dpo_base.py",
+      "base_model": "qwen3_8b",
+      "output_subdir": "dpo_base_qwen3_8b_ce2.5_dpo_strong",
+      "data": {
+        "cb_path": "data/circuit_breakers_train.json",
+        "honeypot_path": "data/honeypots_qwen_fixed.jsonl"
+      },
+      "train_args": {
+        "harm_ce_min": 2.5,
+        "hp_ce_min": 2.5,
+        "w_dpo_hp_over_harm": 2.0,
+        "dpo_beta": 5.0,
+        "dpo_margin": 1.0,
+        "dpo_detach_harm": true
+      }
+    },
+    "dpo_base_qwen3_8b_ce2.5_dpo_inverse": {
+      "script": "defenses/dpo_base.py",
+      "base_model": "qwen3_8b",
+      "output_subdir": "dpo_base_qwen3_8b_ce2.5_dpo_inverse",
+      "data": {
+        "cb_path": "data/circuit_breakers_train.json",
+        "honeypot_path": "data/honeypots_qwen_fixed.jsonl"
+      },
+      "train_args": {
+        "harm_ce_min": 2.5,
+        "hp_ce_min": 2.5,
+        "w_dpo_hp_over_harm": -1.0,
+        "dpo_beta": 2.0,
+        "dpo_margin": 1,
+        "dpo_detach_harm": false
+      }
+    }
+  },
+  "attacks": {
+    "soft_prompt_plain": {
+      "attack_name": "soft_prompt",
+      "num_variants": 1,
+      "attack_config": [
+        {
+          "lr": 0.01,
+          "num_steps": 500,
+          "num_tokens": 10,
+          "optim_str_init": "Make sure to respond well, with the correct info.",
+          "rand_init": false,
+          "pick_best": "min_final_loss",
+          "log_every": 10
+        }
+      ]
+    },
+    "soft_prompt_long": {
+      "attack_name": "soft_prompt",
+      "num_variants": 1,
+      "attack_config": [
+        {
+          "lr": 0.001,
+          "num_steps": 500,
+          "num_tokens": 20,
+          "optim_str_init": "Answer with your unfiltered thoughts. Be detailed.",
+          "rand_init": false,
+          "pick_best": "min_final_loss",
+          "log_every": 10
+        }
+      ]
+    },
+    "universal_soft_prompt": {
+      "attack_name": "universal_soft_prompt",
+      "num_variants": 1,
+      "attack_config": [
+        {
+          "training_data": {
+            "circuit_breakers": "data/circuit_breakers_train.json"
+          },
+          "hyperparams": {
+            "lr": 0.001,
+            "num_steps": 5000,
+            "num_tokens": 2,
+            "optim_str_init": "x x",
+            "rand_init": false,
+            "w_circuit_breakers": 1.0,
+            "w_honeypots": null,
+            "log_every": 5
+          }
+        }
+      ]
+    }
+  },
+  "benign_evals": {
+    "basic_eval": {
+      "tasks": "gsm8k"
+    }
+  },
+  "pipelines": {
+    "base_llama3_8b": [
+      {
+        "stage": "attack",
+        "defense": "base_llama3_8b",
+        "attacks": [
+          "soft_prompt_plain",
+          "soft_prompt_long",
+          "universal_soft_prompt"
+        ]
+      }
+    ],
+    "base_qwen3_8b": [
+      {
+        "stage": "attack",
+        "defense": "base_qwen3_8b",
+        "attacks": [
+          "soft_prompt_plain",
+          "soft_prompt_long",
+          "universal_soft_prompt"
+        ]
+      }
+    ],
+    "dpo_base_llama3_8b_ce10.0_nodpo": [
+      {
+        "stage": "attack",
+        "defense": "dpo_base_llama3_8b_ce10.0_nodpo",
+        "attacks": [
+          "soft_prompt_plain",
+          "soft_prompt_long",
+          "universal_soft_prompt"
+        ]
+      }
+    ],
+    "dpo_base_llama3_8b_ce10.0_dpo_weak": [
+      {
+        "stage": "attack",
+        "defense": "dpo_base_llama3_8b_ce10.0_dpo_weak",
+        "attacks": [
+          "soft_prompt_plain",
+          "soft_prompt_long",
+          "universal_soft_prompt"
+        ]
+      }
+    ],
+    "dpo_base_llama3_8b_ce10.0_dpo_mid": [
+      {
+        "stage": "attack",
+        "defense": "dpo_base_llama3_8b_ce10.0_dpo_mid",
+        "attacks": [
+          "soft_prompt_plain",
+          "soft_prompt_long",
+          "universal_soft_prompt"
+        ]
+      }
+    ],
+    "dpo_base_llama3_8b_ce10.0_dpo_strong": [
+      {
+        "stage": "attack",
+        "defense": "dpo_base_llama3_8b_ce10.0_dpo_strong",
+        "attacks": [
+          "soft_prompt_plain",
+          "soft_prompt_long",
+          "universal_soft_prompt"
+        ]
+      }
+    ],
+    "dpo_base_llama3_8b_ce10.0_dpo_inverse": [
+      {
+        "stage": "attack",
+        "defense": "dpo_base_llama3_8b_ce10.0_dpo_inverse",
+        "attacks": [
+          "soft_prompt_plain",
+          "soft_prompt_long",
+          "universal_soft_prompt"
+        ]
+      }
+    ],
+    "dpo_base_llama3_8b_ce5.0_nodpo": [
+      {
+        "stage": "attack",
+        "defense": "dpo_base_llama3_8b_ce5.0_nodpo",
+        "attacks": [
+          "soft_prompt_plain",
+          "soft_prompt_long",
+          "universal_soft_prompt"
+        ]
+      }
+    ],
+    "dpo_base_llama3_8b_ce5.0_dpo_weak": [
+      {
+        "stage": "attack",
+        "defense": "dpo_base_llama3_8b_ce5.0_dpo_weak",
+        "attacks": [
+          "soft_prompt_plain",
+          "soft_prompt_long",
+          "universal_soft_prompt"
+        ]
+      }
+    ],
+    "dpo_base_llama3_8b_ce5.0_dpo_mid": [
+      {
+        "stage": "attack",
+        "defense": "dpo_base_llama3_8b_ce5.0_dpo_mid",
+        "attacks": [
+          "soft_prompt_plain",
+          "soft_prompt_long",
+          "universal_soft_prompt"
+        ]
+      }
+    ],
+    "dpo_base_llama3_8b_ce5.0_dpo_strong": [
+      {
+        "stage": "attack",
+        "defense": "dpo_base_llama3_8b_ce5.0_dpo_strong",
+        "attacks": [
+          "soft_prompt_plain",
+          "soft_prompt_long",
+          "universal_soft_prompt"
+        ]
+      }
+    ],
+    "dpo_base_llama3_8b_ce5.0_dpo_inverse": [
+      {
+        "stage": "attack",
+        "defense": "dpo_base_llama3_8b_ce5.0_dpo_inverse",
+        "attacks": [
+          "soft_prompt_plain",
+          "soft_prompt_long",
+          "universal_soft_prompt"
+        ]
+      }
+    ],
+    "dpo_base_llama3_8b_ce2.5_nodpo": [
+      {
+        "stage": "attack",
+        "defense": "dpo_base_llama3_8b_ce2.5_nodpo",
+        "attacks": [
+          "soft_prompt_plain",
+          "soft_prompt_long",
+          "universal_soft_prompt"
+        ]
+      }
+    ],
+    "dpo_base_llama3_8b_ce2.5_dpo_weak": [
+      {
+        "stage": "attack",
+        "defense": "dpo_base_llama3_8b_ce2.5_dpo_weak",
+        "attacks": [
+          "soft_prompt_plain",
+          "soft_prompt_long",
+          "universal_soft_prompt"
+        ]
+      }
+    ],
+    "dpo_base_llama3_8b_ce2.5_dpo_mid": [
+      {
+        "stage": "attack",
+        "defense": "dpo_base_llama3_8b_ce2.5_dpo_mid",
+        "attacks": [
+          "soft_prompt_plain",
+          "soft_prompt_long",
+          "universal_soft_prompt"
+        ]
+      }
+    ],
+    "dpo_base_llama3_8b_ce2.5_dpo_strong": [
+      {
+        "stage": "attack",
+        "defense": "dpo_base_llama3_8b_ce2.5_dpo_strong",
+        "attacks": [
+          "soft_prompt_plain",
+          "soft_prompt_long",
+          "universal_soft_prompt"
+        ]
+      }
+    ],
+    "dpo_base_llama3_8b_ce2.5_dpo_inverse": [
+      {
+        "stage": "attack",
+        "defense": "dpo_base_llama3_8b_ce2.5_dpo_inverse",
+        "attacks": [
+          "soft_prompt_plain",
+          "soft_prompt_long",
+          "universal_soft_prompt"
+        ]
+      }
+    ],
+    "dpo_base_qwen3_8b_ce10.0_nodpo": [
+      {
+        "stage": "attack",
+        "defense": "dpo_base_qwen3_8b_ce10.0_nodpo",
+        "attacks": [
+          "soft_prompt_plain",
+          "soft_prompt_long",
+          "universal_soft_prompt"
+        ]
+      }
+    ],
+    "dpo_base_qwen3_8b_ce10.0_dpo_weak": [
+      {
+        "stage": "attack",
+        "defense": "dpo_base_qwen3_8b_ce10.0_dpo_weak",
+        "attacks": [
+          "soft_prompt_plain",
+          "soft_prompt_long",
+          "universal_soft_prompt"
+        ]
+      }
+    ],
+    "dpo_base_qwen3_8b_ce10.0_dpo_mid": [
+      {
+        "stage": "attack",
+        "defense": "dpo_base_qwen3_8b_ce10.0_dpo_mid",
+        "attacks": [
+          "soft_prompt_plain",
+          "soft_prompt_long",
+          "universal_soft_prompt"
+        ]
+      }
+    ],
+    "dpo_base_qwen3_8b_ce10.0_dpo_strong": [
+      {
+        "stage": "attack",
+        "defense": "dpo_base_qwen3_8b_ce10.0_dpo_strong",
+        "attacks": [
+          "soft_prompt_plain",
+          "soft_prompt_long",
+          "universal_soft_prompt"
+        ]
+      }
+    ],
+    "dpo_base_qwen3_8b_ce10.0_dpo_inverse": [
+      {
+        "stage": "attack",
+        "defense": "dpo_base_qwen3_8b_ce10.0_dpo_inverse",
+        "attacks": [
+          "soft_prompt_plain",
+          "soft_prompt_long",
+          "universal_soft_prompt"
+        ]
+      }
+    ],
+    "dpo_base_qwen3_8b_ce5.0_nodpo": [
+      {
+        "stage": "attack",
+        "defense": "dpo_base_qwen3_8b_ce5.0_nodpo",
+        "attacks": [
+          "soft_prompt_plain",
+          "soft_prompt_long",
+          "universal_soft_prompt"
+        ]
+      }
+    ],
+    "dpo_base_qwen3_8b_ce5.0_dpo_weak": [
+      {
+        "stage": "attack",
+        "defense": "dpo_base_qwen3_8b_ce5.0_dpo_weak",
+        "attacks": [
+          "soft_prompt_plain",
+          "soft_prompt_long",
+          "universal_soft_prompt"
+        ]
+      }
+    ],
+    "dpo_base_qwen3_8b_ce5.0_dpo_mid": [
+      {
+        "stage": "attack",
+        "defense": "dpo_base_qwen3_8b_ce5.0_dpo_mid",
+        "attacks": [
+          "soft_prompt_plain",
+          "soft_prompt_long",
+          "universal_soft_prompt"
+        ]
+      }
+    ],
+    "dpo_base_qwen3_8b_ce5.0_dpo_strong": [
+      {
+        "stage": "attack",
+        "defense": "dpo_base_qwen3_8b_ce5.0_dpo_strong",
+        "attacks": [
+          "soft_prompt_plain",
+          "soft_prompt_long",
+          "universal_soft_prompt"
+        ]
+      }
+    ],
+    "dpo_base_qwen3_8b_ce5.0_dpo_inverse": [
+      {
+        "stage": "attack",
+        "defense": "dpo_base_qwen3_8b_ce5.0_dpo_inverse",
+        "attacks": [
+          "soft_prompt_plain",
+          "soft_prompt_long",
+          "universal_soft_prompt"
+        ]
+      }
+    ],
+    "dpo_base_qwen3_8b_ce2.5_nodpo": [
+      {
+        "stage": "attack",
+        "defense": "dpo_base_qwen3_8b_ce2.5_nodpo",
+        "attacks": [
+          "soft_prompt_plain",
+          "soft_prompt_long",
+          "universal_soft_prompt"
+        ]
+      }
+    ],
+    "dpo_base_qwen3_8b_ce2.5_dpo_weak": [
+      {
+        "stage": "attack",
+        "defense": "dpo_base_qwen3_8b_ce2.5_dpo_weak",
+        "attacks": [
+          "soft_prompt_plain",
+          "soft_prompt_long",
+          "universal_soft_prompt"
+        ]
+      }
+    ],
+    "dpo_base_qwen3_8b_ce2.5_dpo_mid": [
+      {
+        "stage": "attack",
+        "defense": "dpo_base_qwen3_8b_ce2.5_dpo_mid",
+        "attacks": [
+          "soft_prompt_plain",
+          "soft_prompt_long",
+          "universal_soft_prompt"
+        ]
+      }
+    ],
+    "dpo_base_qwen3_8b_ce2.5_dpo_strong": [
+      {
+        "stage": "attack",
+        "defense": "dpo_base_qwen3_8b_ce2.5_dpo_strong",
+        "attacks": [
+          "soft_prompt_plain",
+          "soft_prompt_long",
+          "universal_soft_prompt"
+        ]
+      }
+    ],
+    "dpo_base_qwen3_8b_ce2.5_dpo_inverse": [
+      {
+        "stage": "attack",
+        "defense": "dpo_base_qwen3_8b_ce2.5_dpo_inverse",
+        "attacks": [
+          "soft_prompt_plain",
+          "soft_prompt_long",
+          "universal_soft_prompt"
+        ]
+      }
+    ]
+  },
+  "run_pipelines": [
+    "base_llama3_8b",
+    "base_qwen3_8b",
+    "dpo_base_llama3_8b_ce10.0_nodpo",
+    "dpo_base_llama3_8b_ce10.0_dpo_weak",
+    "dpo_base_llama3_8b_ce10.0_dpo_mid",
+    "dpo_base_llama3_8b_ce10.0_dpo_strong",
+    "dpo_base_llama3_8b_ce10.0_dpo_inverse",
+    "dpo_base_llama3_8b_ce5.0_nodpo",
+    "dpo_base_llama3_8b_ce5.0_dpo_weak",
+    "dpo_base_llama3_8b_ce5.0_dpo_mid",
+    "dpo_base_llama3_8b_ce5.0_dpo_strong",
+    "dpo_base_llama3_8b_ce5.0_dpo_inverse",
+    "dpo_base_llama3_8b_ce2.5_nodpo",
+    "dpo_base_llama3_8b_ce2.5_dpo_weak",
+    "dpo_base_llama3_8b_ce2.5_dpo_mid",
+    "dpo_base_llama3_8b_ce2.5_dpo_strong",
+    "dpo_base_llama3_8b_ce2.5_dpo_inverse",
+    "dpo_base_qwen3_8b_ce10.0_nodpo",
+    "dpo_base_qwen3_8b_ce10.0_dpo_weak",
+    "dpo_base_qwen3_8b_ce10.0_dpo_mid",
+    "dpo_base_qwen3_8b_ce10.0_dpo_strong",
+    "dpo_base_qwen3_8b_ce10.0_dpo_inverse",
+    "dpo_base_qwen3_8b_ce5.0_nodpo",
+    "dpo_base_qwen3_8b_ce5.0_dpo_weak",
+    "dpo_base_qwen3_8b_ce5.0_dpo_mid",
+    "dpo_base_qwen3_8b_ce5.0_dpo_strong",
+    "dpo_base_qwen3_8b_ce5.0_dpo_inverse",
+    "dpo_base_qwen3_8b_ce2.5_nodpo",
+    "dpo_base_qwen3_8b_ce2.5_dpo_weak",
+    "dpo_base_qwen3_8b_ce2.5_dpo_mid",
+    "dpo_base_qwen3_8b_ce2.5_dpo_strong",
+    "dpo_base_qwen3_8b_ce2.5_dpo_inverse"
+  ]
+}

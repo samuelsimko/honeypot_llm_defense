@@ -24,7 +24,7 @@ DEFAULT_MODEL = "meta-llama/Meta-Llama-3-8B-Instruct"
 DEFAULT_MAX_LENGTH = 256
 DEFAULT_BATCH_SIZE = 4
 DEFAULT_NUM_EPOCHS = 1
-DEFAULT_NUM_MAX_STEPS = None
+DEFAULT_NUM_MAX_STEPS = 1500
 DEFAULT_LR = 2e-4
 DEFAULT_DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 
@@ -742,7 +742,6 @@ def main():
         per_device_train_batch_size=args.batch_size,
         gradient_accumulation_steps=args.grad_accum,
         learning_rate=args.lr,
-        num_train_epochs=args.num_epochs,
         max_steps=args.num_max_steps,
         bf16=True,
         logging_steps=args.logging_steps,

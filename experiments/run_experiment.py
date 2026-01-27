@@ -267,6 +267,14 @@ def main():
                     )
                     atk_out.mkdir(parents=True, exist_ok=True)
 
+                    # --------------------------------------------------
+                    # Skip attack if already judged
+                    # --------------------------------------------------
+                    judged_pkl = atk_out / "judged.pkl"
+                    if judged_pkl.exists():
+                        print(f"⏭️  Skipping attack {attack_name} for {defense_name} (already judged)")
+                        continue
+
                     fingerprint = {
                         "pipeline": pipeline_name,
                         "stage": "attack",

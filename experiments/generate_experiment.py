@@ -203,12 +203,10 @@ def main():
     # -------- Protected defenses --------
     for model_name in MODELS:
         # for now: if not llama, skip
-        if model_name != "llama3_8b":
-            continue
 
         for def_name, def_cfg in DEFENSES.items():
             # for now: if not triplet, skip
-            if def_name != "triplet":
+            if def_name != "cb":
                 continue
 
             for dprof in def_cfg["profiles"]:
@@ -233,12 +231,13 @@ def main():
                             "stage": "attack",
                             "defense": tag,
                             "attacks": list(ATTACKS.keys()),
-                        },
-                        {
-                            "stage": "benign_eval",
-                            "defense": tag,
-                            "benign_eval": "basic_eval",
-                        },
+                        }
+                        # ,
+                        # {
+                            # "stage": "benign_eval",
+                            # "defense": tag,
+                            # "benign_eval": "basic_eval",
+                        # },
                     ]
 
     experiment = {

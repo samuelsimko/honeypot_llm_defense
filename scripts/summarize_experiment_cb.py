@@ -687,6 +687,168 @@ def summarize_experiment(exp_dir: Path):
         exp_dir / "summary" / "best_defenses.json"
     )
 
+    # ============================================================
+    # ATTACK-AGNOSTIC "BEST PER REGIME" (ONE DEFENSE PER MODEL/REGIME)
+    # ============================================================
+
+    def _parse_model_pretty(defense: str) -> str:
+        if "llama3_8b" in defense:
+            return "LLaMA-3 8B"
+        if "qwen3_8b" in defense:
+            return "Qwen-3 8B"
+        return "unknown"
+
+    def _parse_regime_pretty(defense: str) -> str:
+        # Base model dirs are like base_llama3_8b
+        if defense.startswith("base_"):
+            return "Base"
+        # CB runs: cb_<model>_..._nodpo / cb_<model>_..._dpo_*
+        if "nodpo" in defense:
+            return "CB (No-DPO)"
+        if "_dpo_" in defense:
+            return "CB + DPO"
+        return "Other"
+
+    def _attack_family(attack: str) -> str:
+        if attack in {"soft_prompt_plain", "soft_prompt_short", "soft_prompt_long"}:
+            return "Soft Prompt"
+        if attack == "universal_soft_prompt":
+            return "Universal Soft Prompt"
+        return "Other"
+
+    def print_best_per_regime_attack_agnostic(df_attack: pd.DataFrame):
+        """
+        Choose ONE defense per (model, regime) by minimizing ensemble_mean
+        over ALL relevant attacks, then report metrics per attack family.
+        """
+        if df_attack.empty:
+            print("No attack data.")
+            return
+
+        df = df_attack.copy()
+
+        # only keep rows that have the judge stats we need
+        PRIMARY = "behavior_max_mean_ensemble_mean"
+        needed = [
+            "behavior_max_mean_harmbench",
+            "behavior_max_mean_strongreject",
+            "behavior_max_mean_wildguard",
+            "behavior_max_mean_jailjudge_norm",
+            "behavior_max_mean_gpt_oss",
+            PRIMARY,
+        ]
+        for c in needed:
+            if c not in df.columns:
+                print(f"Missing column: {c} — cannot run best-per-regime.")
+                return
+
+        # define "relevant attacks": everything you want to defend against
+        RELEVANT_ATTACKS = {
+            "soft_prompt_plain",
+            "soft_prompt_short",
+            "soft_prompt_long",
+            "universal_soft_prompt",
+        }
+        df = df[df["attack"].isin(RELEVANT_ATTACKS)].copy()
+        if df.empty:
+            print("No relevant attacks found.")
+            return
+
+        df["Model"] = df["defense"].apply(_parse_model_pretty)
+        df["Regime"] = df["defense"].apply(_parse_regime_pretty)
+        df["AttackFamily"] = df["attack"].apply(_attack_family)
+
+        # ----------------------------
+        # 1) SELECT (attack-agnostic)
+        # ----------------------------
+        # Aggregate over *all* attacks per defense, then pick min ensemble
+        agg = (
+            df.groupby(["Model", "Regime", "defense"], as_index=False)[needed]
+              .mean(numeric_only=True)
+              .rename(columns={
+                  "defense": "Best defense",
+                  "behavior_max_mean_harmbench": "harmbench",
+                  "behavior_max_mean_strongreject": "strongreject",
+                  "behavior_max_mean_wildguard": "wildguard",
+                  "behavior_max_mean_jailjudge_norm": "jailjudge_norm",
+                  "behavior_max_mean_gpt_oss": "gpt_oss",
+                  PRIMARY: "ensemble_mean",
+              })
+        )
+
+        # pick best defense per (Model, Regime)
+        idx = (
+            agg.groupby(["Model", "Regime"])["ensemble_mean"]
+               .idxmin()
+               .dropna()
+               .astype(int)
+        )
+        best = agg.loc[idx].copy()
+
+        # add n_attacks used for selection
+        counts = (
+            df.groupby(["Model", "Regime", "defense"])["attack"]
+              .nunique()
+              .reset_index()
+              .rename(columns={"defense": "Best defense", "attack": "n_attacks"})
+        )
+        best = best.merge(counts, on=["Model", "Regime", "Best defense"], how="left")
+
+        # nicer ordering
+        regime_order = pd.CategoricalDtype(["Base", "CB (No-DPO)", "CB + DPO"], ordered=True)
+        best["Regime"] = best["Regime"].astype(regime_order)
+        best = best.sort_values(["Model", "Regime"])
+
+        # convert to percents like your other tables
+        for c in ["harmbench", "strongreject", "wildguard", "jailjudge_norm", "gpt_oss", "ensemble_mean"]:
+            best[c] = best[c] * 100.0
+
+        print("\n" + "=" * 80)
+        print("BEST PER REGIME (ATTACK-AGNOSTIC SELECTION OVER ALL ATTACKS)")
+        print("=" * 80)
+        print(best[[
+            "Model", "Regime", "Best defense", "n_attacks",
+            "harmbench", "strongreject", "wildguard", "jailjudge_norm", "gpt_oss", "ensemble_mean"
+        ]].round(2).to_string(index=False))
+
+        # ----------------------------
+        # 2) REPORT (by attack family)
+        # ----------------------------
+        # Filter df to only the chosen defenses, then aggregate per family
+        chosen = set(best["Best defense"].tolist())
+        df_chosen = df[df["defense"].isin(chosen)].copy()
+
+        report = (
+            df_chosen.groupby(["Model", "Regime", "defense", "AttackFamily"], as_index=False)[needed]
+                     .mean(numeric_only=True)
+                     .rename(columns={
+                         "defense": "Best defense",
+                         "behavior_max_mean_harmbench": "harmbench",
+                         "behavior_max_mean_strongreject": "strongreject",
+                         "behavior_max_mean_wildguard": "wildguard",
+                         "behavior_max_mean_jailjudge_norm": "jailjudge_norm",
+                         "behavior_max_mean_gpt_oss": "gpt_oss",
+                         PRIMARY: "ensemble_mean",
+                     })
+        )
+        for c in ["harmbench", "strongreject", "wildguard", "jailjudge_norm", "gpt_oss", "ensemble_mean"]:
+            report[c] = report[c] * 100.0
+
+        report["Regime"] = report["Regime"].astype(regime_order)
+        report = report.sort_values(["Model", "AttackFamily", "Regime"])
+
+        print("\n" + "=" * 80)
+        print("EVAL BY ATTACK FAMILY (USING THE ATTACK-AGNOSTIC CHOSEN DEFENSE)")
+        print("=" * 80)
+        print(report[[
+            "Model", "AttackFamily", "Regime", "Best defense",
+            "harmbench", "strongreject", "wildguard", "jailjudge_norm", "gpt_oss", "ensemble_mean"
+        ]].round(2).to_string(index=False))
+
+
+    # ---- call it wherever you want after df_attack is constructed + has stats ----
+    print_best_per_regime_attack_agnostic(df_attack)
+
 # -----------------------------
 # CLI
 # -----------------------------

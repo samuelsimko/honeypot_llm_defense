@@ -223,8 +223,7 @@ class LocalGPUBackend(Backend):
 
         wrapped_cmd = (
             "set -euo pipefail; "
-            "cd ~/honeypot_llm_defense; "
-            "source ~/venv/bin/activate; "
+            "source /root/honeypot_llm_defense/venv/bin/activate; "
             "source .env; "
             "nvidia-smi; "
             "sleep 1; "

@@ -208,6 +208,13 @@ def main():
     # Variants
     parser.add_argument("--num-variants", type=int, default=1)
 
+    parser.add_argument(
+        "--behavior-idx",
+        type=int,
+        default=None,
+        help="If set, only run a single behavior by index"
+    )
+
     # Judging
     parser.add_argument("--behavior-label", default="harmful behavior")
 
@@ -232,6 +239,8 @@ def main():
     # --------------------------------------------------------
     df = pd.read_csv(args.harmbench_csv)
     df = df[df["FunctionalCategory"] == "standard"].reset_index(drop=True)
+
+
     if args.limit:
         df = df.head(args.limit)
         print("Limited to %d rows", args.limit)
@@ -240,8 +249,14 @@ def main():
     targets_map = json.load(open(args.harmbench_targets))
     attack_configs = load_json_or_jsonl(args.attack_config_path)
 
+    if args.behavior_idx is not None:
+        if args.behavior_idx < 0 or args.behavior_idx >= len(df):
+            raise ValueError("behavior-idx out of range")
+        df = df.iloc[[args.behavior_idx]].reset_index(drop=True)
+
     LOGGER.info("Loaded %d attack configs", len(attack_configs))
     LOGGER.info("Loaded %d benchmark rows", len(df))
+
 
     # --------------------------------------------------------
     # Load model
@@ -265,7 +280,6 @@ def main():
         completions = load_pickle(completions_path) if os.path.exists(completions_path) else []
 
         AttackCls = get_attack_class(args.attack)
-        init_prompts = [r.Behavior for r in df.itertuples()]
 
         for cfg_id, cfg in enumerate(tqdm.tqdm(attack_configs, desc="Attack configs")):
             training_data = load_training_data(cfg.get("training_data", {}))
@@ -278,44 +292,75 @@ def main():
                 **training_data,
                 **hyper,
             )
-
             attack.initialize()
 
-            for i, row in enumerate(tqdm.tqdm(df.itertuples(), total=len(df), desc="Behaviors", leave=False)):
+            for i, row in enumerate(
+                tqdm.tqdm(df.itertuples(), total=len(df), desc="Behaviors", leave=False)
+            ):
                 bid = row.BehaviorID
                 prompt = row.Behavior
                 target = targets_map.get(bid)
                 if target is None:
                     continue
 
-                variants = [(prompt, target)] if args.num_variants == 1 else [
-                    (prompt, target) for _ in range(args.num_variants)
-                ]
-
-                for v_id, (p, t) in enumerate(variants):
-
+                # --------------------------------------------------
+                # GRPO-style attacks: SINGLE CALL, MULTIPLE VARIANTS
+                # --------------------------------------------------
+                if args.attack == "grpo_prefill":
                     out = attack.run_example(
-                        prompt=p,
+                        prompt=prompt,
                         behavior_id=bid,
-                        target=t,
-                        variant_id=v_id,
+                        target=target,
+                        variant_id=0,
                     )
-                    print("Prompt: ", p)
-                    print("Generated: ", out["generated"])
 
-                    out = normalize_attack_output(out, p)
+                    meta = out.get("attack_metadata", {})
+                    variants = meta.get("successful_jailbreaks", [])
 
-                    completions.append({
-                        "attack": args.attack,
-                        "attack_config_id": cfg_id,
-                        "attack_config": cfg,
-                        "behavior_id": bid,
-                        "variant_id": v_id,
-                        "prompt": out["prompt"],
-                        "target": t,
-                        "generated": out["generated"],
-                        "attack_metadata": out["attack_metadata"],
-                    })
+                    # Fallback: ensure at least one variant
+                    if not variants:
+                        variants = [{
+                            "target_reply": out["generated"]
+                        }]
+
+                    for v_id, v in enumerate(variants[:args.num_variants]):
+                        completions.append({
+                            "attack": args.attack,
+                            "attack_config_id": cfg_id,
+                            "attack_config": cfg,
+                            "behavior_id": bid,
+                            "variant_id": v_id,
+                            "prompt": prompt,
+                            "target": target,
+                            "generated": v["target_reply"],
+                            "attack_metadata": meta,
+                        })
+
+                # --------------------------------------------------
+                # Non-GRPO attacks (soft prompt, embedding, etc.)
+                # --------------------------------------------------
+                else:
+                    for v_id in range(args.num_variants):
+                        out = attack.run_example(
+                            prompt=prompt,
+                            behavior_id=bid,
+                            target=target,
+                            variant_id=v_id,
+                        )
+
+                        out = normalize_attack_output(out, prompt)
+
+                        completions.append({
+                            "attack": args.attack,
+                            "attack_config_id": cfg_id,
+                            "attack_config": cfg,
+                            "behavior_id": bid,
+                            "variant_id": v_id,
+                            "prompt": out["prompt"],
+                            "target": target,
+                            "generated": out["generated"],
+                            "attack_metadata": out["attack_metadata"],
+                        })
 
                 if (i + 1) % args.save_every == 0:
                     save_pickle(completions, completions_path)
@@ -324,15 +369,11 @@ def main():
 
         LOGGER.info("Saved %d completions", len(completions))
 
-        # Free attack model
+        del attack
         del model
         del tokenizer
-        # free attack
-        del attack
-
         torch.cuda.empty_cache()
         gc.collect()
-
     else:
         if not os.path.exists(completions_path):
             raise FileNotFoundError(

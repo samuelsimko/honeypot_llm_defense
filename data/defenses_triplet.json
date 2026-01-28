@@ -1,0 +1,54 @@
+{
+  "schema_version": "1.0",
+  "description": "All tested defenses found in experiment directory",
+  "defenses": [
+    {
+      "defense": "triplet_llama3_8b_trip0_dpo_mid",
+      "model": "llama3_8b",
+      "regime": "dpo",
+      "adapter_path": "runs/experiments/triplet_llama3_8b_trip0_dpo_mid/lora_adapter"
+    },
+    {
+      "defense": "triplet_llama3_8b_trip0_dpo_strong",
+      "model": "llama3_8b",
+      "regime": "dpo",
+      "adapter_path": "runs/experiments/triplet_llama3_8b_trip0_dpo_strong/lora_adapter"
+    },
+    {
+      "defense": "triplet_llama3_8b_trip0_dpo_weak",
+      "model": "llama3_8b",
+      "regime": "dpo",
+      "adapter_path": "runs/experiments/triplet_llama3_8b_trip0_dpo_weak/lora_adapter"
+    },
+    {
+      "defense": "triplet_llama3_8b_trip0_nodpo",
+      "model": "llama3_8b",
+      "regime": "nodpo",
+      "adapter_path": "runs/experiments/triplet_llama3_8b_trip0_nodpo/lora_adapter"
+    },
+    {
+      "defense": "triplet_llama3_8b_trip10_dpo_mid",
+      "model": "llama3_8b",
+      "regime": "dpo",
+      "adapter_path": "runs/experiments/triplet_llama3_8b_trip10_dpo_mid/lora_adapter"
+    },
+    {
+      "defense": "triplet_llama3_8b_trip10_dpo_strong",
+      "model": "llama3_8b",
+      "regime": "dpo",
+      "adapter_path": "runs/experiments/triplet_llama3_8b_trip10_dpo_strong/lora_adapter"
+    },
+    {
+      "defense": "triplet_llama3_8b_trip10_dpo_weak",
+      "model": "llama3_8b",
+      "regime": "dpo",
+      "adapter_path": "runs/experiments/triplet_llama3_8b_trip10_dpo_weak/lora_adapter"
+    },
+    {
+      "defense": "triplet_llama3_8b_trip10_nodpo",
+      "model": "llama3_8b",
+      "regime": "nodpo",
+      "adapter_path": "runs/experiments/triplet_llama3_8b_trip10_nodpo/lora_adapter"
+    }
+  ]
+}

@@ -1,0 +1,86 @@
+{
+  "schema_version": "1.0",
+  "selection_metric": "behavior_max_mean_ensemble_mean",
+  "defenses": [
+    {
+      "model": "meta-llama/Meta-Llama-3-8B-Instruct",
+      "regime": "nodpo",
+      "defense": "dpo_base_llama3_8b_ce2.5_nodpo",
+      "selection_metric": "behavior_max_mean_ensemble_mean",
+      "metric_value": 0.6366666666666666,
+      "adapter_path": "runs/experiments/dpo_base_threshold_dpo_sweep/dpo_base_llama3_8b_ce2.5_nodpo/lora_adapter"
+    },
+    {
+      "model": "meta-llama/Meta-Llama-3-8B-Instruct",
+      "regime": "dpo",
+      "defense": "dpo_base_llama3_8b_ce10.0_dpo_weak",
+      "selection_metric": "behavior_max_mean_ensemble_mean",
+      "metric_value": 0.46,
+      "adapter_path": "runs/experiments/dpo_base_threshold_dpo_sweep/dpo_base_llama3_8b_ce10.0_dpo_weak/lora_adapter"
+    },
+    {
+      "model": "Qwen/Qwen3-8b",
+      "regime": "nodpo",
+      "defense": "dpo_base_qwen3_8b_ce5.0_nodpo",
+      "selection_metric": "behavior_max_mean_ensemble_mean",
+      "metric_value": 0.20666666666666667,
+      "adapter_path": "runs/experiments/dpo_base_threshold_dpo_sweep/dpo_base_qwen3_8b_ce5.0_nodpo/lora_adapter"
+    },
+    {
+      "model": "Qwen/Qwen3-8b",
+      "regime": "dpo",
+      "defense": "dpo_base_qwen3_8b_ce10.0_dpo_weak",
+      "selection_metric": "behavior_max_mean_ensemble_mean",
+      "metric_value": 0.3333333333333333,
+      "adapter_path": "runs/experiments/dpo_base_threshold_dpo_sweep/dpo_base_qwen3_8b_ce10.0_dpo_weak/lora_adapter"
+    },
+    {
+      "model": "meta-llama/Meta-Llama-3-8B-Instruct",
+      "regime": "nodpo",
+      "defense": "cb_llama3_8b_cb10_nodpo",
+      "selection_metric": "behavior_max_mean_ensemble_mean",
+      "metric_value": 0.6033333333333334,
+      "adapter_path": "runs/experiments/honeypot_structured_ablation/cb_llama3_8b_cb10_nodpo/lora_adapter"
+    },
+    {
+      "model": "meta-llama/Meta-Llama-3-8B-Instruct",
+      "regime": "dpo",
+      "defense": "cb_llama3_8b_cb10_dpo_strong",
+      "selection_metric": "behavior_max_mean_ensemble_mean",
+      "metric_value": 0.6166666666666667,
+      "adapter_path": "runs/experiments/honeypot_structured_ablation/cb_llama3_8b_cb10_dpo_strong/lora_adapter"
+    },
+    {
+      "model": "Qwen/Qwen3-8b",
+      "regime": "nodpo",
+      "defense": "cb_qwen3_8b_cb10_nodpo",
+      "selection_metric": "behavior_max_mean_ensemble_mean",
+      "metric_value": 0.5633333333333334,
+      "adapter_path": "runs/experiments/honeypot_structured_ablation/cb_qwen3_8b_cb10_nodpo/lora_adapter"
+    },
+    {
+      "model": "Qwen/Qwen3-8b",
+      "regime": "dpo",
+      "defense": "cb_qwen3_8b_cb10_dpo_mid",
+      "selection_metric": "behavior_max_mean_ensemble_mean",
+      "metric_value": 0.42333333333333334,
+      "adapter_path": "runs/experiments/honeypot_structured_ablation/cb_qwen3_8b_cb10_dpo_mid/lora_adapter"
+    },
+    {
+	    "model": "Qwen/Qwen3-8b",
+	    "regime": "base",
+	    "defense": "base_qwen3_8b",
+	    "selection_metric": "behavior_max_mean_ensemble_mean",
+	    "metric_value": null,
+	    "adapter_path": null
+    },
+    {
+	    "model": "meta-llama/Meta-Llama-3-8B-Instruct",
+	    "regime": "base",
+	    "defense": "base_llama3_8b",
+	    "selection_metric": "behavior_max_mean_ensemble_mean",
+	    "metric_value": null,
+	    "adapter_path": null
+    }
+  ]
+}

@@ -23,8 +23,10 @@ import pandas as pd
 # -----------------------------
 
 LMEVAL_DIR = Path(
-    "runs/experiments/dpo_base_threshold_dpo_sweep/benign_eval/lmeval"
+    "runs/experiments/triplet_ablation/benign_eval/lmeval"
 )
+    # "runs/experiments/dpo_base_threshold_dpo_sweep/benign_eval/lmeval"
+     # "runs/experiments/honeypot_structured_ablation/benign_eval/lmeval/"
 
 TASK_SPECS = {
     "arc_challenge": ("ARC-Challenge", ["acc_norm,none"]),

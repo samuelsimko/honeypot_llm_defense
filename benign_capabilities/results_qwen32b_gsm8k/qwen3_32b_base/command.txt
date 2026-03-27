@@ -1,0 +1,1 @@
+lm_eval --model hf --model_args pretrained=Qwen/Qwen3-32B,dtype=bfloat16 --tasks gsm8k --device cuda --output_path benign_capabilities/results_qwen32b_gsm8k/qwen3_32b_base

@@ -128,7 +128,7 @@ def run_soft_opt(
     losses: List[float] = []
 
     # We train on (prefix + optim + suffix + target), but we only generate from (prefix + optim + suffix)
-    config.verbose = False
+    config.verbose = True
     for step in tqdm.tqdm(range(config.num_steps), disable=not config.verbose):
         opt.zero_grad(set_to_none=True)
 

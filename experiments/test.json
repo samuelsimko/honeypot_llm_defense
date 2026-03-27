@@ -19,19 +19,19 @@
   },
 
   "models": {
-    "qwen3_8b": {
-      "hf_id": "Qwen/Qwen3-8B"
+    "qwen3_32b": {
+      "hf_id": "Qwen/Qwen3-32B"
     }
   },
 
   "defenses": {
     "hp_cb_tiny": {
       "script": "defenses/honeypot_cb.py",
-      "base_model": "qwen3_8b",
+      "base_model": "qwen3_32b",
       "output_subdir": "hp_cb_tiny",
       "data": {
         "cb_path": "data/circuit_breakers_train.json",
-        "honeypot_path": "data/honeypots_generated.jsonl"
+        "honeypot_path": "data/honeypots_qwen_fixed.jsonl"
       },
       "train_args": {
         "num_max_steps": 10,

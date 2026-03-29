@@ -855,16 +855,16 @@ def main():
         gradient_accumulation_steps=args.grad_accum,
         learning_rate=args.lr,
         max_steps=args.num_max_steps,
-        # bf16=True,
+        bf16=True,
         logging_steps=args.logging_steps,
         save_steps=args.save_steps,
         max_grad_norm=1.0,
         save_total_limit=args.save_total_limit,
         report_to="wandb",
         run_name=run_name,
-        ddp_find_unused_parameters=False,
-        fsdp="full_shard auto_wrap",
-        fsdp_config=args.fsdp_config_path,
+        # ddp_find_unused_parameters=False,
+        # fsdp="full_shard auto_wrap",
+        # fsdp_config=args.fsdp_config_path,
     )
 
     trainer = QuadBatchTrainer(

@@ -111,9 +111,9 @@ def run_soft_opt(
     target_ids = tokenizer(tgt, return_tensors="pt", add_special_tokens=False)["input_ids"].to(device)
 
     emb = model.get_input_embeddings()
-    before_embeds = emb(before_ids)
-    after_embeds = emb(after_ids)
-    target_embeds = emb(target_ids)
+    before_embeds = emb(before_ids).detach()
+    after_embeds = emb(after_ids).detach()
+    target_embeds = emb(target_ids).detach()
 
     if not config.rand_init:
         optim_ids = tokenizer(config.optim_str_init, return_tensors="pt", add_special_tokens=False)["input_ids"].to(device)

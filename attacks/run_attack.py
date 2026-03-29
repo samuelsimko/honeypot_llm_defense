@@ -349,6 +349,7 @@ def main():
                         )
 
                         out = normalize_attack_output(out, prompt)
+                        print(out["generated"])
 
                         completions.append({
                             "attack": args.attack,

@@ -246,7 +246,9 @@ def main():
                 ddef = defenses[defense_name]
 
                 base_model = models[ddef["base_model"]]["hf_id"]
-                if ddef.get("script") is not None:
+                if "adapter_path" in ddef and ddef["adapter_path"] is not None:
+                    lora_path = Path(ddef["adapter_path"])
+                elif ddef.get("script") is not None:
                     lora_path = out_root / ddef["output_subdir"] / "lora_adapter"
                 else:
                     lora_path = None
@@ -314,8 +316,7 @@ def main():
                     if judge_only:
                         cmd += ["--judge-only"]
 
-                    if ddef.get("script") is not None:
-                        lora_path = out_root / ddef["output_subdir"] / "lora_adapter"
+                    if lora_path is not None:
                         cmd += ["--lora", str(lora_path)]
 
                     if "limit" in atk:
@@ -347,7 +348,9 @@ def main():
                 bcfg = benign_evals[benign_name]
 
                 base_model = models[ddef["base_model"]]["hf_id"]
-                if ddef.get("script") is not None:
+                if "adapter_path" in ddef and ddef["adapter_path"] is not None:
+                    lora_path = Path(ddef["adapter_path"])
+                elif ddef.get("script") is not None:
                     lora_path = out_root / ddef["output_subdir"] / "lora_adapter"
                 else:
                     lora_path = None

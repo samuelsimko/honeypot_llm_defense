@@ -50,8 +50,8 @@ from peft import LoraConfig, get_peft_model
 # Defaults
 # ============================================================
 DEFAULT_MODEL = "meta-llama/Meta-Llama-3-8B-Instruct"
-DEFAULT_MAX_LENGTH = 256
-DEFAULT_BATCH_SIZE = 4
+DEFAULT_MAX_LENGTH = 180
+DEFAULT_BATCH_SIZE = 3
 DEFAULT_LR = 2e-4
 DEFAULT_NUM_EPOCHS = 1
 DEFAULT_NUM_MAX_STEPS = 1500
@@ -339,8 +339,8 @@ def main():
             save_steps=200,
             report_to="wandb",
             run_name=run_name,
-        ),
-        tokenizer=tok,
+        )#,
+        # tokenizer=tok,
     )
 
     trainer.train()

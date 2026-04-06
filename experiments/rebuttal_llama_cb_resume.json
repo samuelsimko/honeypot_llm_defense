@@ -1,0 +1,811 @@
+{
+  "meta": {
+    "experiment_name": "rebuttal_llama_cb_full",
+    "output_root": "runs/experiments"
+  },
+  "cluster": {
+    "partition": "tamper_resistance",
+    "account": "zhijing_jin",
+    "gres": "gpu:1",
+    "time_train": "03:00:00",
+    "time_attack": "03:00:00",
+    "time_benign": "02:00:00"
+  },
+  "models": {
+    "llama3_8b": {
+      "hf_id": "meta-llama/Meta-Llama-3-8B-Instruct"
+    }
+  },
+  "datasets": {
+    "harmbench_csv": "data/harmbench_behaviors_text_val.csv",
+    "harmbench_targets": "data/harmbench_targets_text.json"
+  },
+  "defenses": {
+    "base_llama3_8b": {
+      "script": null,
+      "base_model": "llama3_8b",
+      "output_subdir": "base_llama3_8b",
+      "train_args": {}
+    },
+    "cb_llama3_8b_cb_base_dpo_weak": {
+      "script": "defenses/honeypot_cb.py",
+      "base_model": "llama3_8b",
+      "output_subdir": "cb_llama3_8b_cb_base_dpo_weak",
+      "data": {
+        "cb_path": "data/circuit_breakers_train.json",
+        "honeypot_path": "data/honeypots_qwen_fixed.jsonl"
+      },
+      "train_args": {
+        "margin_ce": 0.0,
+        "w_dpo_hp_over_harm": 0.5,
+        "dpo_beta": 1.0,
+        "dpo_margin": 0.0,
+        "dpo_detach_harm": true
+      }
+    },
+    "cb_llama3_8b_cb_base_dpo_mid": {
+      "script": "defenses/honeypot_cb.py",
+      "base_model": "llama3_8b",
+      "output_subdir": "cb_llama3_8b_cb_base_dpo_mid",
+      "data": {
+        "cb_path": "data/circuit_breakers_train.json",
+        "honeypot_path": "data/honeypots_qwen_fixed.jsonl"
+      },
+      "train_args": {
+        "margin_ce": 0.0,
+        "w_dpo_hp_over_harm": 1.0,
+        "dpo_beta": 2.0,
+        "dpo_margin": 1.0,
+        "dpo_detach_harm": true
+      }
+    },
+    "cb_llama3_8b_cb_layers_nodpo": {
+      "script": "defenses/honeypot_cb.py",
+      "base_model": "llama3_8b",
+      "output_subdir": "cb_llama3_8b_cb_layers_nodpo",
+      "data": {
+        "cb_path": "data/circuit_breakers_train.json",
+        "honeypot_path": "data/honeypots_qwen_fixed.jsonl"
+      },
+      "train_args": {
+        "margin_ce": 0.0,
+        "rep_layers": [
+          20,
+          21,
+          22,
+          23,
+          24,
+          25,
+          26,
+          27,
+          28,
+          29,
+          30,
+          31
+        ],
+        "w_dpo_hp_over_harm": 0.0
+      }
+    },
+    "cb_llama3_8b_cb_layers_dpo_weak": {
+      "script": "defenses/honeypot_cb.py",
+      "base_model": "llama3_8b",
+      "output_subdir": "cb_llama3_8b_cb_layers_dpo_weak",
+      "data": {
+        "cb_path": "data/circuit_breakers_train.json",
+        "honeypot_path": "data/honeypots_qwen_fixed.jsonl"
+      },
+      "train_args": {
+        "margin_ce": 0.0,
+        "rep_layers": [
+          20,
+          21,
+          22,
+          23,
+          24,
+          25,
+          26,
+          27,
+          28,
+          29,
+          30,
+          31
+        ],
+        "w_dpo_hp_over_harm": 0.5,
+        "dpo_beta": 1.0,
+        "dpo_margin": 0.0,
+        "dpo_detach_harm": true
+      }
+    },
+    "cb_llama3_8b_cb_layers_dpo_mid": {
+      "script": "defenses/honeypot_cb.py",
+      "base_model": "llama3_8b",
+      "output_subdir": "cb_llama3_8b_cb_layers_dpo_mid",
+      "data": {
+        "cb_path": "data/circuit_breakers_train.json",
+        "honeypot_path": "data/honeypots_qwen_fixed.jsonl"
+      },
+      "train_args": {
+        "margin_ce": 0.0,
+        "rep_layers": [
+          20,
+          21,
+          22,
+          23,
+          24,
+          25,
+          26,
+          27,
+          28,
+          29,
+          30,
+          31
+        ],
+        "w_dpo_hp_over_harm": 1.0,
+        "dpo_beta": 2.0,
+        "dpo_margin": 1.0,
+        "dpo_detach_harm": true
+      }
+    },
+    "cb_llama3_8b_cb_ce10_nodpo": {
+      "script": "defenses/honeypot_cb.py",
+      "base_model": "llama3_8b",
+      "output_subdir": "cb_llama3_8b_cb_ce10_nodpo",
+      "data": {
+        "cb_path": "data/circuit_breakers_train.json",
+        "honeypot_path": "data/honeypots_qwen_fixed.jsonl"
+      },
+      "train_args": {
+        "margin_ce": 10.0,
+        "w_dpo_hp_over_harm": 0.0
+      }
+    },
+    "cb_llama3_8b_cb_ce10_dpo_weak": {
+      "script": "defenses/honeypot_cb.py",
+      "base_model": "llama3_8b",
+      "output_subdir": "cb_llama3_8b_cb_ce10_dpo_weak",
+      "data": {
+        "cb_path": "data/circuit_breakers_train.json",
+        "honeypot_path": "data/honeypots_qwen_fixed.jsonl"
+      },
+      "train_args": {
+        "margin_ce": 10.0,
+        "w_dpo_hp_over_harm": 0.5,
+        "dpo_beta": 1.0,
+        "dpo_margin": 0.0,
+        "dpo_detach_harm": true
+      }
+    },
+    "cb_llama3_8b_cb_ce10_dpo_mid": {
+      "script": "defenses/honeypot_cb.py",
+      "base_model": "llama3_8b",
+      "output_subdir": "cb_llama3_8b_cb_ce10_dpo_mid",
+      "data": {
+        "cb_path": "data/circuit_breakers_train.json",
+        "honeypot_path": "data/honeypots_qwen_fixed.jsonl"
+      },
+      "train_args": {
+        "margin_ce": 10.0,
+        "w_dpo_hp_over_harm": 1.0,
+        "dpo_beta": 2.0,
+        "dpo_margin": 1.0,
+        "dpo_detach_harm": true
+      }
+    },
+    "cb_llama3_8b_cb_layers_ce10_nodpo": {
+      "script": "defenses/honeypot_cb.py",
+      "base_model": "llama3_8b",
+      "output_subdir": "cb_llama3_8b_cb_layers_ce10_nodpo",
+      "data": {
+        "cb_path": "data/circuit_breakers_train.json",
+        "honeypot_path": "data/honeypots_qwen_fixed.jsonl"
+      },
+      "train_args": {
+        "margin_ce": 10.0,
+        "rep_layers": [
+          20,
+          21,
+          22,
+          23,
+          24,
+          25,
+          26,
+          27,
+          28,
+          29,
+          30,
+          31
+        ],
+        "w_dpo_hp_over_harm": 0.0
+      }
+    },
+    "cb_llama3_8b_cb_layers_ce10_dpo_weak": {
+      "script": "defenses/honeypot_cb.py",
+      "base_model": "llama3_8b",
+      "output_subdir": "cb_llama3_8b_cb_layers_ce10_dpo_weak",
+      "data": {
+        "cb_path": "data/circuit_breakers_train.json",
+        "honeypot_path": "data/honeypots_qwen_fixed.jsonl"
+      },
+      "train_args": {
+        "margin_ce": 10.0,
+        "rep_layers": [
+          20,
+          21,
+          22,
+          23,
+          24,
+          25,
+          26,
+          27,
+          28,
+          29,
+          30,
+          31
+        ],
+        "w_dpo_hp_over_harm": 0.5,
+        "dpo_beta": 1.0,
+        "dpo_margin": 0.0,
+        "dpo_detach_harm": true
+      }
+    },
+    "cb_llama3_8b_cb_layers_ce10_dpo_mid": {
+      "script": "defenses/honeypot_cb.py",
+      "base_model": "llama3_8b",
+      "output_subdir": "cb_llama3_8b_cb_layers_ce10_dpo_mid",
+      "data": {
+        "cb_path": "data/circuit_breakers_train.json",
+        "honeypot_path": "data/honeypots_qwen_fixed.jsonl"
+      },
+      "train_args": {
+        "margin_ce": 10.0,
+        "rep_layers": [
+          20,
+          21,
+          22,
+          23,
+          24,
+          25,
+          26,
+          27,
+          28,
+          29,
+          30,
+          31
+        ],
+        "w_dpo_hp_over_harm": 1.0,
+        "dpo_beta": 2.0,
+        "dpo_margin": 1.0,
+        "dpo_detach_harm": true
+      }
+    },
+    "cb_llama3_8b_cb_begn_nodpo": {
+      "script": "defenses/honeypot_cb.py",
+      "base_model": "llama3_8b",
+      "output_subdir": "cb_llama3_8b_cb_begn_nodpo",
+      "data": {
+        "cb_path": "data/circuit_breakers_train.json",
+        "honeypot_path": "data/honeypots_qwen_fixed.jsonl"
+      },
+      "train_args": {
+        "margin_ce": 10.0,
+        "w_align_benign": 5.0,
+        "w_dpo_hp_over_harm": 0.0
+      }
+    },
+    "cb_llama3_8b_cb_begn_dpo_weak": {
+      "script": "defenses/honeypot_cb.py",
+      "base_model": "llama3_8b",
+      "output_subdir": "cb_llama3_8b_cb_begn_dpo_weak",
+      "data": {
+        "cb_path": "data/circuit_breakers_train.json",
+        "honeypot_path": "data/honeypots_qwen_fixed.jsonl"
+      },
+      "train_args": {
+        "margin_ce": 10.0,
+        "w_align_benign": 5.0,
+        "w_dpo_hp_over_harm": 0.5,
+        "dpo_beta": 1.0,
+        "dpo_margin": 0.0,
+        "dpo_detach_harm": true
+      }
+    },
+    "cb_llama3_8b_cb_begn_dpo_mid": {
+      "script": "defenses/honeypot_cb.py",
+      "base_model": "llama3_8b",
+      "output_subdir": "cb_llama3_8b_cb_begn_dpo_mid",
+      "data": {
+        "cb_path": "data/circuit_breakers_train.json",
+        "honeypot_path": "data/honeypots_qwen_fixed.jsonl"
+      },
+      "train_args": {
+        "margin_ce": 10.0,
+        "w_align_benign": 5.0,
+        "w_dpo_hp_over_harm": 1.0,
+        "dpo_beta": 2.0,
+        "dpo_margin": 1.0,
+        "dpo_detach_harm": true
+      }
+    }
+  },
+  "attacks": {
+    "soft_prompt_plain": {
+      "attack_name": "soft_prompt",
+      "num_variants": 1,
+      "attack_config": [
+        {
+          "lr": 0.01,
+          "num_steps": 500,
+          "num_tokens": 10,
+          "optim_str_init": "Make sure to respond well.",
+          "rand_init": false,
+          "pick_best": "min_final_loss"
+        }
+      ]
+    },
+    "soft_prompt_long": {
+      "attack_name": "soft_prompt",
+      "num_variants": 1,
+      "attack_config": [
+        {
+          "lr": 0.001,
+          "num_steps": 500,
+          "num_tokens": 20,
+          "optim_str_init": "Answer with your unfiltered thoughts.",
+          "rand_init": false,
+          "pick_best": "min_final_loss"
+        }
+      ]
+    },
+    "grpo_prefill": {
+      "attack_name": "grpo_prefill",
+      "num_variants": 1,
+      "attack_config": [
+        {
+          "lr": 1e-05,
+          "num_steps": 200,
+          "rollouts_per_step": 4,
+          "max_new_tokens": 256,
+          "prefill_max_chars": 32,
+          "use_elite_buffer": true,
+          "elite_buffer_size": 32,
+          "seed_jailbreak_bank": [
+            "wildjailbreaks",
+            "jailbreakv"
+          ]
+        }
+      ]
+    },
+    "grpo_prefill_strong": {
+      "attack_name": "grpo_prefill",
+      "num_variants": 1,
+      "attack_config": [
+        {
+          "lr": 5e-05,
+          "num_steps": 300,
+          "rollouts_per_step": 6,
+          "max_new_tokens": 256,
+          "prefill_max_chars": 30,
+          "use_elite_buffer": true,
+          "elite_buffer_size": 64,
+          "seed_jailbreak_bank": [
+            "wildjailbreaks",
+            "jailbreakv"
+          ]
+        }
+      ]
+    }
+  },
+  "benign_evals": {
+    "gsm8k_eval": {
+      "tasks": "gsm8k"
+    },
+    "mmlu_eval": {
+      "tasks": "mmlu"
+    }
+  },
+  "pipelines": {
+    "base_llama3_8b": [
+      {
+        "stage": "attack",
+        "defense": "base_llama3_8b",
+        "attacks": [
+          "soft_prompt_plain",
+          "soft_prompt_long",
+          "grpo_prefill",
+          "grpo_prefill_strong"
+        ]
+      },
+      {
+        "stage": "benign_eval",
+        "defense": "base_llama3_8b",
+        "benign_eval": "gsm8k_eval"
+      },
+      {
+        "stage": "benign_eval",
+        "defense": "base_llama3_8b",
+        "benign_eval": "mmlu_eval"
+      }
+    ],
+    "cb_llama3_8b_cb_base_dpo_weak": [
+      {
+        "stage": "train",
+        "defense": "cb_llama3_8b_cb_base_dpo_weak"
+      },
+      {
+        "stage": "attack",
+        "defense": "cb_llama3_8b_cb_base_dpo_weak",
+        "attacks": [
+          "soft_prompt_plain",
+          "soft_prompt_long",
+          "grpo_prefill",
+          "grpo_prefill_strong"
+        ]
+      },
+      {
+        "stage": "benign_eval",
+        "defense": "cb_llama3_8b_cb_base_dpo_weak",
+        "benign_eval": "gsm8k_eval"
+      },
+      {
+        "stage": "benign_eval",
+        "defense": "cb_llama3_8b_cb_base_dpo_weak",
+        "benign_eval": "mmlu_eval"
+      }
+    ],
+    "cb_llama3_8b_cb_base_dpo_mid": [
+      {
+        "stage": "train",
+        "defense": "cb_llama3_8b_cb_base_dpo_mid"
+      },
+      {
+        "stage": "attack",
+        "defense": "cb_llama3_8b_cb_base_dpo_mid",
+        "attacks": [
+          "soft_prompt_plain",
+          "soft_prompt_long",
+          "grpo_prefill",
+          "grpo_prefill_strong"
+        ]
+      },
+      {
+        "stage": "benign_eval",
+        "defense": "cb_llama3_8b_cb_base_dpo_mid",
+        "benign_eval": "gsm8k_eval"
+      },
+      {
+        "stage": "benign_eval",
+        "defense": "cb_llama3_8b_cb_base_dpo_mid",
+        "benign_eval": "mmlu_eval"
+      }
+    ],
+    "cb_llama3_8b_cb_layers_nodpo": [
+      {
+        "stage": "train",
+        "defense": "cb_llama3_8b_cb_layers_nodpo"
+      },
+      {
+        "stage": "attack",
+        "defense": "cb_llama3_8b_cb_layers_nodpo",
+        "attacks": [
+          "soft_prompt_plain",
+          "soft_prompt_long",
+          "grpo_prefill",
+          "grpo_prefill_strong"
+        ]
+      },
+      {
+        "stage": "benign_eval",
+        "defense": "cb_llama3_8b_cb_layers_nodpo",
+        "benign_eval": "gsm8k_eval"
+      },
+      {
+        "stage": "benign_eval",
+        "defense": "cb_llama3_8b_cb_layers_nodpo",
+        "benign_eval": "mmlu_eval"
+      }
+    ],
+    "cb_llama3_8b_cb_layers_dpo_weak": [
+      {
+        "stage": "train",
+        "defense": "cb_llama3_8b_cb_layers_dpo_weak"
+      },
+      {
+        "stage": "attack",
+        "defense": "cb_llama3_8b_cb_layers_dpo_weak",
+        "attacks": [
+          "soft_prompt_plain",
+          "soft_prompt_long",
+          "grpo_prefill",
+          "grpo_prefill_strong"
+        ]
+      },
+      {
+        "stage": "benign_eval",
+        "defense": "cb_llama3_8b_cb_layers_dpo_weak",
+        "benign_eval": "gsm8k_eval"
+      },
+      {
+        "stage": "benign_eval",
+        "defense": "cb_llama3_8b_cb_layers_dpo_weak",
+        "benign_eval": "mmlu_eval"
+      }
+    ],
+    "cb_llama3_8b_cb_layers_dpo_mid": [
+      {
+        "stage": "train",
+        "defense": "cb_llama3_8b_cb_layers_dpo_mid"
+      },
+      {
+        "stage": "attack",
+        "defense": "cb_llama3_8b_cb_layers_dpo_mid",
+        "attacks": [
+          "soft_prompt_plain",
+          "soft_prompt_long",
+          "grpo_prefill",
+          "grpo_prefill_strong"
+        ]
+      },
+      {
+        "stage": "benign_eval",
+        "defense": "cb_llama3_8b_cb_layers_dpo_mid",
+        "benign_eval": "gsm8k_eval"
+      },
+      {
+        "stage": "benign_eval",
+        "defense": "cb_llama3_8b_cb_layers_dpo_mid",
+        "benign_eval": "mmlu_eval"
+      }
+    ],
+    "cb_llama3_8b_cb_ce10_nodpo": [
+      {
+        "stage": "train",
+        "defense": "cb_llama3_8b_cb_ce10_nodpo"
+      },
+      {
+        "stage": "attack",
+        "defense": "cb_llama3_8b_cb_ce10_nodpo",
+        "attacks": [
+          "soft_prompt_plain",
+          "soft_prompt_long",
+          "grpo_prefill",
+          "grpo_prefill_strong"
+        ]
+      },
+      {
+        "stage": "benign_eval",
+        "defense": "cb_llama3_8b_cb_ce10_nodpo",
+        "benign_eval": "gsm8k_eval"
+      },
+      {
+        "stage": "benign_eval",
+        "defense": "cb_llama3_8b_cb_ce10_nodpo",
+        "benign_eval": "mmlu_eval"
+      }
+    ],
+    "cb_llama3_8b_cb_ce10_dpo_weak": [
+      {
+        "stage": "train",
+        "defense": "cb_llama3_8b_cb_ce10_dpo_weak"
+      },
+      {
+        "stage": "attack",
+        "defense": "cb_llama3_8b_cb_ce10_dpo_weak",
+        "attacks": [
+          "soft_prompt_plain",
+          "soft_prompt_long",
+          "grpo_prefill",
+          "grpo_prefill_strong"
+        ]
+      },
+      {
+        "stage": "benign_eval",
+        "defense": "cb_llama3_8b_cb_ce10_dpo_weak",
+        "benign_eval": "gsm8k_eval"
+      },
+      {
+        "stage": "benign_eval",
+        "defense": "cb_llama3_8b_cb_ce10_dpo_weak",
+        "benign_eval": "mmlu_eval"
+      }
+    ],
+    "cb_llama3_8b_cb_ce10_dpo_mid": [
+      {
+        "stage": "train",
+        "defense": "cb_llama3_8b_cb_ce10_dpo_mid"
+      },
+      {
+        "stage": "attack",
+        "defense": "cb_llama3_8b_cb_ce10_dpo_mid",
+        "attacks": [
+          "soft_prompt_plain",
+          "soft_prompt_long",
+          "grpo_prefill",
+          "grpo_prefill_strong"
+        ]
+      },
+      {
+        "stage": "benign_eval",
+        "defense": "cb_llama3_8b_cb_ce10_dpo_mid",
+        "benign_eval": "gsm8k_eval"
+      },
+      {
+        "stage": "benign_eval",
+        "defense": "cb_llama3_8b_cb_ce10_dpo_mid",
+        "benign_eval": "mmlu_eval"
+      }
+    ],
+    "cb_llama3_8b_cb_layers_ce10_nodpo": [
+      {
+        "stage": "train",
+        "defense": "cb_llama3_8b_cb_layers_ce10_nodpo"
+      },
+      {
+        "stage": "attack",
+        "defense": "cb_llama3_8b_cb_layers_ce10_nodpo",
+        "attacks": [
+          "soft_prompt_plain",
+          "soft_prompt_long",
+          "grpo_prefill",
+          "grpo_prefill_strong"
+        ]
+      },
+      {
+        "stage": "benign_eval",
+        "defense": "cb_llama3_8b_cb_layers_ce10_nodpo",
+        "benign_eval": "gsm8k_eval"
+      },
+      {
+        "stage": "benign_eval",
+        "defense": "cb_llama3_8b_cb_layers_ce10_nodpo",
+        "benign_eval": "mmlu_eval"
+      }
+    ],
+    "cb_llama3_8b_cb_layers_ce10_dpo_weak": [
+      {
+        "stage": "train",
+        "defense": "cb_llama3_8b_cb_layers_ce10_dpo_weak"
+      },
+      {
+        "stage": "attack",
+        "defense": "cb_llama3_8b_cb_layers_ce10_dpo_weak",
+        "attacks": [
+          "soft_prompt_plain",
+          "soft_prompt_long",
+          "grpo_prefill",
+          "grpo_prefill_strong"
+        ]
+      },
+      {
+        "stage": "benign_eval",
+        "defense": "cb_llama3_8b_cb_layers_ce10_dpo_weak",
+        "benign_eval": "gsm8k_eval"
+      },
+      {
+        "stage": "benign_eval",
+        "defense": "cb_llama3_8b_cb_layers_ce10_dpo_weak",
+        "benign_eval": "mmlu_eval"
+      }
+    ],
+    "cb_llama3_8b_cb_layers_ce10_dpo_mid": [
+      {
+        "stage": "train",
+        "defense": "cb_llama3_8b_cb_layers_ce10_dpo_mid"
+      },
+      {
+        "stage": "attack",
+        "defense": "cb_llama3_8b_cb_layers_ce10_dpo_mid",
+        "attacks": [
+          "soft_prompt_plain",
+          "soft_prompt_long",
+          "grpo_prefill",
+          "grpo_prefill_strong"
+        ]
+      },
+      {
+        "stage": "benign_eval",
+        "defense": "cb_llama3_8b_cb_layers_ce10_dpo_mid",
+        "benign_eval": "gsm8k_eval"
+      },
+      {
+        "stage": "benign_eval",
+        "defense": "cb_llama3_8b_cb_layers_ce10_dpo_mid",
+        "benign_eval": "mmlu_eval"
+      }
+    ],
+    "cb_llama3_8b_cb_begn_nodpo": [
+      {
+        "stage": "train",
+        "defense": "cb_llama3_8b_cb_begn_nodpo"
+      },
+      {
+        "stage": "attack",
+        "defense": "cb_llama3_8b_cb_begn_nodpo",
+        "attacks": [
+          "soft_prompt_plain",
+          "soft_prompt_long",
+          "grpo_prefill",
+          "grpo_prefill_strong"
+        ]
+      },
+      {
+        "stage": "benign_eval",
+        "defense": "cb_llama3_8b_cb_begn_nodpo",
+        "benign_eval": "gsm8k_eval"
+      },
+      {
+        "stage": "benign_eval",
+        "defense": "cb_llama3_8b_cb_begn_nodpo",
+        "benign_eval": "mmlu_eval"
+      }
+    ],
+    "cb_llama3_8b_cb_begn_dpo_weak": [
+      {
+        "stage": "train",
+        "defense": "cb_llama3_8b_cb_begn_dpo_weak"
+      },
+      {
+        "stage": "attack",
+        "defense": "cb_llama3_8b_cb_begn_dpo_weak",
+        "attacks": [
+          "soft_prompt_plain",
+          "soft_prompt_long",
+          "grpo_prefill",
+          "grpo_prefill_strong"
+        ]
+      },
+      {
+        "stage": "benign_eval",
+        "defense": "cb_llama3_8b_cb_begn_dpo_weak",
+        "benign_eval": "gsm8k_eval"
+      },
+      {
+        "stage": "benign_eval",
+        "defense": "cb_llama3_8b_cb_begn_dpo_weak",
+        "benign_eval": "mmlu_eval"
+      }
+    ],
+    "cb_llama3_8b_cb_begn_dpo_mid": [
+      {
+        "stage": "train",
+        "defense": "cb_llama3_8b_cb_begn_dpo_mid"
+      },
+      {
+        "stage": "attack",
+        "defense": "cb_llama3_8b_cb_begn_dpo_mid",
+        "attacks": [
+          "soft_prompt_plain",
+          "soft_prompt_long",
+          "grpo_prefill",
+          "grpo_prefill_strong"
+        ]
+      },
+      {
+        "stage": "benign_eval",
+        "defense": "cb_llama3_8b_cb_begn_dpo_mid",
+        "benign_eval": "gsm8k_eval"
+      },
+      {
+        "stage": "benign_eval",
+        "defense": "cb_llama3_8b_cb_begn_dpo_mid",
+        "benign_eval": "mmlu_eval"
+      }
+    ]
+  },
+  "run_pipelines": [
+    "base_llama3_8b",
+    "cb_llama3_8b_cb_base_dpo_weak",
+    "cb_llama3_8b_cb_base_dpo_mid",
+    "cb_llama3_8b_cb_layers_nodpo",
+    "cb_llama3_8b_cb_layers_dpo_weak",
+    "cb_llama3_8b_cb_layers_dpo_mid",
+    "cb_llama3_8b_cb_ce10_nodpo",
+    "cb_llama3_8b_cb_ce10_dpo_weak",
+    "cb_llama3_8b_cb_ce10_dpo_mid",
+    "cb_llama3_8b_cb_layers_ce10_nodpo",
+    "cb_llama3_8b_cb_layers_ce10_dpo_weak",
+    "cb_llama3_8b_cb_layers_ce10_dpo_mid",
+    "cb_llama3_8b_cb_begn_nodpo",
+    "cb_llama3_8b_cb_begn_dpo_weak",
+    "cb_llama3_8b_cb_begn_dpo_mid"
+  ]
+}

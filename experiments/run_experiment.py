@@ -75,7 +75,10 @@ def build_arg_list(args: Dict[str, object]) -> List[str]:
         if v is None:
             continue
         out.append(f"--{k}")
-        out.append(str(v))
+        if isinstance(v, list):
+            out.extend(str(x) for x in v)
+        else:
+            out.append(str(v))
     return out
 
 
@@ -204,6 +207,11 @@ def main():
 
             if is_stage_done(out_dir, fingerprint):
                 print(f"⏭️  Skipping training {defense_name} (already completed)")
+                train_jobs[defense_name] = None
+                continue
+
+            if (out_dir / "READY").exists():
+                print(f"⏭️  Skipping training {defense_name} (READY exists)")
                 train_jobs[defense_name] = None
                 continue
 
@@ -391,6 +399,10 @@ def main():
                     print(f"⏭️  Skipping benign eval {benign_name}")
                     continue
 
+                meta_file = out_dir / "meta.json"
+                if meta_file.exists():
+                    print(f"⏭️  Skipping benign eval {benign_name} (meta.json exists)")
+                    continue
 
                 backend.submit(
                     name=f"{pipeline_name}_benign_{benign_name}_{defense_name}",

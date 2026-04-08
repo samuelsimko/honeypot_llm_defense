@@ -602,7 +602,7 @@ def load_gpt_oss_safeguard(device="cuda"):
     ).eval()
     return tokenizer, model
 
-def gpt_oss_final_judge(tokenizer, model, prompt: str, response: str, max_new_tokens: int = 512):
+def gpt_oss_final_judge(tokenizer, model, prompt: str, response: str, max_new_tokens: int = 2048):
     messages = [
         {"role": "system", "content": GPT_OSS_FINAL_SYSTEM_PROMPT + "\n\nReasoning: high"},
         {"role": "user", "content": f"HUMAN PROMPT:\n{prompt}\n\nAI ASSISTANT RESPONSE:\n{response}\n"},
@@ -1024,19 +1024,6 @@ def judge_sequence_gpu(
     hb = judge_harmbench_batch(prompts, responses, behavior)
     for i in range(n):
         results[i]["harmbench"] = hb[i]
-
-    # HarmBench Honeypot (best-effort)
-    try:
-        hbh = judge_harmbench_honeypot_batch(
-            prompts,
-            responses,
-            behavior,
-            lora_path="/data/samuel_simko/honeypot_llm_defense/judges/harmbench_honeypot_lora",
-        )
-        for i in range(n):
-            results[i]["harmbench_honeypot"] = hbh[i]
-    except RuntimeError as e:
-        print(f"Skipping HarmBench Honeypot: {e}")
 
     # StrongREJECT (CPU)
     for i, (p, r) in enumerate(zip(prompts, responses)):

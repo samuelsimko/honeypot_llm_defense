@@ -1,0 +1,5 @@
+level,n_examples,mean_response_chars,std_response_chars,mean_explanation_chars,mean_candidates_saved
+0,3982,687.84,128.42,293.81,1.0
+1,3990,756.24,125.1,309.48,1.0
+2,3987,883.72,133.33,334.81,1.0
+3,3988,912.29,140.92,339.69,1.0

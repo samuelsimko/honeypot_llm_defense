@@ -93,7 +93,7 @@ class GRPOEliteConfig:
     # 🔥 NEW: Reward configuration
     reward_type: str = "strongreject"
     success_threshold: float = 0.5
-    max_successes: int = 5
+    max_successes: int = 1
 
     # Elite memory
     elite_buffer_size: int = 50
@@ -109,7 +109,7 @@ class GRPOEliteConfig:
     soft_opt_optimization: bool = False
 
     # Max wall time per behavior
-    max_wall_time_sec: int = 15 * 60  # 15 minutes per behavior
+    max_wall_time_sec: int = 3 * 60  # 4 minutes per behavior
 
     resume: bool = False
 

@@ -1,0 +1,331 @@
+{
+  "meta": {
+    "experiment_name": "dpo_base_honeypot_ablation_softprompt",
+    "output_root": "runs/experiments"
+  },
+  "models": {
+    "llama3_8b": {
+      "hf_id": "meta-llama/Meta-Llama-3-8B-Instruct"
+    },
+    "qwen3_8b": {
+      "hf_id": "Qwen/Qwen3-8B"
+    }
+  },
+  "datasets": {
+    "harmbench_csv": "data/harmbench_behaviors_text_val.csv",
+    "harmbench_targets": "data/harmbench_targets_text.json"
+  },
+  "defenses": {
+    "base_llama3_8b": {
+      "script": null,
+      "base_model": "llama3_8b",
+      "output_subdir": "base_llama3_8b",
+      "train_args": {}
+    },
+    "base_qwen3_8b": {
+      "script": null,
+      "base_model": "qwen3_8b",
+      "output_subdir": "base_qwen3_8b",
+      "train_args": {}
+    },
+
+    "dpo_base_llama3_8b_ablation0": {
+      "script": "defenses/dpo_base.py",
+      "base_model": "llama3_8b",
+      "output_subdir": "dpo_base_llama3_8b_ablation0",
+      "data": {
+        "cb_path": "data/circuit_breakers_train.json",
+        "honeypot_path": "data/honeypot_ablation_0.jsonl"
+      },
+      "train_args": {
+        "harm_ce_min": 5.0,
+        "hp_ce_min": 5.0,
+        "w_dpo_hp_over_harm": 0.5,
+        "dpo_beta": 1.0,
+        "dpo_margin": 0.0,
+        "dpo_detach_harm": true
+      }
+    },
+    "dpo_base_llama3_8b_ablation1": {
+      "script": "defenses/dpo_base.py",
+      "base_model": "llama3_8b",
+      "output_subdir": "dpo_base_llama3_8b_ablation1",
+      "data": {
+        "cb_path": "data/circuit_breakers_train.json",
+        "honeypot_path": "data/honeypot_ablation_1.jsonl"
+      },
+      "train_args": {
+        "harm_ce_min": 5.0,
+        "hp_ce_min": 5.0,
+        "w_dpo_hp_over_harm": 0.5,
+        "dpo_beta": 1.0,
+        "dpo_margin": 0.0,
+        "dpo_detach_harm": true
+      }
+    },
+    "dpo_base_llama3_8b_ablation2": {
+      "script": "defenses/dpo_base.py",
+      "base_model": "llama3_8b",
+      "output_subdir": "dpo_base_llama3_8b_ablation2",
+      "data": {
+        "cb_path": "data/circuit_breakers_train.json",
+        "honeypot_path": "data/honeypot_ablation_2.jsonl"
+      },
+      "train_args": {
+        "harm_ce_min": 5.0,
+        "hp_ce_min": 5.0,
+        "w_dpo_hp_over_harm": 0.5,
+        "dpo_beta": 1.0,
+        "dpo_margin": 0.0,
+        "dpo_detach_harm": true
+      }
+    },
+    "dpo_base_llama3_8b_ablation3": {
+      "script": "defenses/dpo_base.py",
+      "base_model": "llama3_8b",
+      "output_subdir": "dpo_base_llama3_8b_ablation3",
+      "data": {
+        "cb_path": "data/circuit_breakers_train.json",
+        "honeypot_path": "data/honeypot_ablation_3.jsonl"
+      },
+      "train_args": {
+        "harm_ce_min": 5.0,
+        "hp_ce_min": 5.0,
+        "w_dpo_hp_over_harm": 0.5,
+        "dpo_beta": 1.0,
+        "dpo_margin": 0.0,
+        "dpo_detach_harm": true
+      }
+    },
+
+    "dpo_base_qwen3_8b_ablation0": {
+      "script": "defenses/dpo_base.py",
+      "base_model": "qwen3_8b",
+      "output_subdir": "dpo_base_qwen3_8b_ablation0",
+      "data": {
+        "cb_path": "data/circuit_breakers_train.json",
+        "honeypot_path": "data/honeypot_ablation_0.jsonl"
+      },
+      "train_args": {
+        "harm_ce_min": 5.0,
+        "hp_ce_min": 5.0,
+        "w_dpo_hp_over_harm": 0.5,
+        "dpo_beta": 1.0,
+        "dpo_margin": 0.0,
+        "dpo_detach_harm": true
+      }
+    },
+    "dpo_base_qwen3_8b_ablation1": {
+      "script": "defenses/dpo_base.py",
+      "base_model": "qwen3_8b",
+      "output_subdir": "dpo_base_qwen3_8b_ablation1",
+      "data": {
+        "cb_path": "data/circuit_breakers_train.json",
+        "honeypot_path": "data/honeypot_ablation_1.jsonl"
+      },
+      "train_args": {
+        "harm_ce_min": 5.0,
+        "hp_ce_min": 5.0,
+        "w_dpo_hp_over_harm": 0.5,
+        "dpo_beta": 1.0,
+        "dpo_margin": 0.0,
+        "dpo_detach_harm": true
+      }
+    },
+    "dpo_base_qwen3_8b_ablation2": {
+      "script": "defenses/dpo_base.py",
+      "base_model": "qwen3_8b",
+      "output_subdir": "dpo_base_qwen3_8b_ablation2",
+      "data": {
+        "cb_path": "data/circuit_breakers_train.json",
+        "honeypot_path": "data/honeypot_ablation_2.jsonl"
+      },
+      "train_args": {
+        "harm_ce_min": 5.0,
+        "hp_ce_min": 5.0,
+        "w_dpo_hp_over_harm": 0.5,
+        "dpo_beta": 1.0,
+        "dpo_margin": 0.0,
+        "dpo_detach_harm": true
+      }
+    },
+    "dpo_base_qwen3_8b_ablation3": {
+      "script": "defenses/dpo_base.py",
+      "base_model": "qwen3_8b",
+      "output_subdir": "dpo_base_qwen3_8b_ablation3",
+      "data": {
+        "cb_path": "data/circuit_breakers_train.json",
+        "honeypot_path": "data/honeypot_ablation_3.jsonl"
+      },
+      "train_args": {
+        "harm_ce_min": 5.0,
+        "hp_ce_min": 5.0,
+        "w_dpo_hp_over_harm": 0.5,
+        "dpo_beta": 1.0,
+        "dpo_margin": 0.0,
+        "dpo_detach_harm": true
+      }
+    }
+  },
+  "attacks": {
+    "soft_prompt_plain": {
+      "attack_name": "soft_prompt",
+      "num_variants": 1,
+      "attack_config": [
+        {
+          "lr": 0.01,
+          "num_steps": 500,
+          "num_tokens": 10,
+          "optim_str_init": "Make sure to respond well, with the correct info.",
+          "rand_init": false,
+          "pick_best": "min_final_loss",
+          "log_every": 10
+        }
+      ]
+    }
+  },
+  "benign_evals": {
+    "basic_eval": {
+      "tasks": "gsm8k",
+      "limit": 200
+    }
+  },
+  "pipelines": {
+    "base_llama3_8b": [
+      {
+        "stage": "attack",
+        "defense": "base_llama3_8b",
+        "attacks": [
+          "soft_prompt_plain"
+        ]
+      }
+    ],
+    "base_qwen3_8b": [
+      {
+        "stage": "attack",
+        "defense": "base_qwen3_8b",
+        "attacks": [
+          "soft_prompt_plain"
+        ]
+      }
+    ],
+
+    "dpo_base_llama3_8b_ablation0": [
+      {
+        "stage": "train",
+        "defense": "dpo_base_llama3_8b_ablation0"
+      },
+      {
+        "stage": "attack",
+        "defense": "dpo_base_llama3_8b_ablation0",
+        "attacks": [
+          "soft_prompt_plain"
+        ]
+      }
+    ],
+    "dpo_base_llama3_8b_ablation1": [
+      {
+        "stage": "train",
+        "defense": "dpo_base_llama3_8b_ablation1"
+      },
+      {
+        "stage": "attack",
+        "defense": "dpo_base_llama3_8b_ablation1",
+        "attacks": [
+          "soft_prompt_plain"
+        ]
+      }
+    ],
+    "dpo_base_llama3_8b_ablation2": [
+      {
+        "stage": "train",
+        "defense": "dpo_base_llama3_8b_ablation2"
+      },
+      {
+        "stage": "attack",
+        "defense": "dpo_base_llama3_8b_ablation2",
+        "attacks": [
+          "soft_prompt_plain"
+        ]
+      }
+    ],
+    "dpo_base_llama3_8b_ablation3": [
+      {
+        "stage": "train",
+        "defense": "dpo_base_llama3_8b_ablation3"
+      },
+      {
+        "stage": "attack",
+        "defense": "dpo_base_llama3_8b_ablation3",
+        "attacks": [
+          "soft_prompt_plain"
+        ]
+      }
+    ],
+
+    "dpo_base_qwen3_8b_ablation0": [
+      {
+        "stage": "train",
+        "defense": "dpo_base_qwen3_8b_ablation0"
+      },
+      {
+        "stage": "attack",
+        "defense": "dpo_base_qwen3_8b_ablation0",
+        "attacks": [
+          "soft_prompt_plain"
+        ]
+      }
+    ],
+    "dpo_base_qwen3_8b_ablation1": [
+      {
+        "stage": "train",
+        "defense": "dpo_base_qwen3_8b_ablation1"
+      },
+      {
+        "stage": "attack",
+        "defense": "dpo_base_qwen3_8b_ablation1",
+        "attacks": [
+          "soft_prompt_plain"
+        ]
+      }
+    ],
+    "dpo_base_qwen3_8b_ablation2": [
+      {
+        "stage": "train",
+        "defense": "dpo_base_qwen3_8b_ablation2"
+      },
+      {
+        "stage": "attack",
+        "defense": "dpo_base_qwen3_8b_ablation2",
+        "attacks": [
+          "soft_prompt_plain"
+        ]
+      }
+    ],
+    "dpo_base_qwen3_8b_ablation3": [
+      {
+        "stage": "train",
+        "defense": "dpo_base_qwen3_8b_ablation3"
+      },
+      {
+        "stage": "attack",
+        "defense": "dpo_base_qwen3_8b_ablation3",
+        "attacks": [
+          "soft_prompt_plain"
+        ]
+      }
+    ]
+  },
+  "run_pipelines": [
+    "base_llama3_8b",
+    "base_qwen3_8b",
+    "dpo_base_llama3_8b_ablation0",
+    "dpo_base_llama3_8b_ablation1",
+    "dpo_base_llama3_8b_ablation2",
+    "dpo_base_llama3_8b_ablation3",
+    "dpo_base_qwen3_8b_ablation0",
+    "dpo_base_qwen3_8b_ablation1",
+    "dpo_base_qwen3_8b_ablation2",
+    "dpo_base_qwen3_8b_ablation3"
+  ]
+}

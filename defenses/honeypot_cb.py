@@ -27,7 +27,7 @@ from transformers import (
 # 1. Defaults
 # -----------------------------
 DEFAULT_MODEL = "meta-llama/Meta-Llama-3-8B-Instruct"
-DEFAULT_MAX_LENGTH = 100
+DEFAULT_MAX_LENGTH = 512
 DEFAULT_BATCH_SIZE = 1
 DEFAULT_NUM_EPOCHS = 1
 DEFAULT_NUM_MAX_STEPS = 1500

@@ -1,0 +1,725 @@
+{
+  "meta": {
+    "experiment_name": "llama_cb_grpo_matched_sweep",
+    "output_root": "runs/experiments"
+  },
+  "cluster": {
+    "partition": "tamper_resistance",
+    "account": "zhijing_jin",
+    "gres": "gpu:1",
+    "time_train": "02:00:00",
+    "time_attack": "01:30:00",
+    "time_benign": "01:00:00"
+  },
+  "models": {
+    "llama3_8b": {
+      "hf_id": "meta-llama/Meta-Llama-3-8B-Instruct"
+    }
+  },
+  "datasets": {
+    "harmbench_csv": "data/harmbench_behaviors_text_val.csv",
+    "harmbench_targets": "data/harmbench_targets_text.json"
+  },
+  "defenses": {
+    "base_llama3_8b": {
+      "script": null,
+      "base_model": "llama3_8b",
+      "output_subdir": "base_llama3_8b",
+      "train_args": {}
+    },
+    "cb_llama3_8b_cb_a_nodpo": {
+      "script": "defenses/honeypot_cb.py",
+      "base_model": "llama3_8b",
+      "output_subdir": "cb_llama3_8b_cb_a_nodpo",
+      "data": {
+        "cb_path": "data/circuit_breakers_train.json",
+        "honeypot_path": "data/honeypots_qwen_fixed.jsonl"
+      },
+      "train_args": {
+        "margin_ce": 0.0,
+        "w_benign": 1.0,
+        "w_breaking": 1.0,
+        "w_dpo_hp_over_harm": 0.0
+      }
+    },
+    "cb_llama3_8b_cb_a_dpo_weak": {
+      "script": "defenses/honeypot_cb.py",
+      "base_model": "llama3_8b",
+      "output_subdir": "cb_llama3_8b_cb_a_dpo_weak",
+      "data": {
+        "cb_path": "data/circuit_breakers_train.json",
+        "honeypot_path": "data/honeypots_qwen_fixed.jsonl"
+      },
+      "train_args": {
+        "margin_ce": 0.0,
+        "w_benign": 1.0,
+        "w_breaking": 1.0,
+        "w_dpo_hp_over_harm": 0.5,
+        "dpo_beta": 1.0,
+        "dpo_margin": 0.0,
+        "dpo_detach_harm": true
+      }
+    },
+    "cb_llama3_8b_cb_a_dpo_mid": {
+      "script": "defenses/honeypot_cb.py",
+      "base_model": "llama3_8b",
+      "output_subdir": "cb_llama3_8b_cb_a_dpo_mid",
+      "data": {
+        "cb_path": "data/circuit_breakers_train.json",
+        "honeypot_path": "data/honeypots_qwen_fixed.jsonl"
+      },
+      "train_args": {
+        "margin_ce": 0.0,
+        "w_benign": 1.0,
+        "w_breaking": 1.0,
+        "w_dpo_hp_over_harm": 1.0,
+        "dpo_beta": 2.0,
+        "dpo_margin": 1.0,
+        "dpo_detach_harm": true
+      }
+    },
+    "cb_llama3_8b_cb_b_nodpo": {
+      "script": "defenses/honeypot_cb.py",
+      "base_model": "llama3_8b",
+      "output_subdir": "cb_llama3_8b_cb_b_nodpo",
+      "data": {
+        "cb_path": "data/circuit_breakers_train.json",
+        "honeypot_path": "data/honeypots_qwen_fixed.jsonl"
+      },
+      "train_args": {
+        "margin_ce": 0.0,
+        "w_benign": 5,
+        "w_breaking": 3.0,
+        "w_dpo_hp_over_harm": 0.0
+      }
+    },
+    "cb_llama3_8b_cb_b_dpo_weak": {
+      "script": "defenses/honeypot_cb.py",
+      "base_model": "llama3_8b",
+      "output_subdir": "cb_llama3_8b_cb_b_dpo_weak",
+      "data": {
+        "cb_path": "data/circuit_breakers_train.json",
+        "honeypot_path": "data/honeypots_qwen_fixed.jsonl"
+      },
+      "train_args": {
+        "margin_ce": 0.0,
+        "w_benign": 5,
+        "w_breaking": 3.0,
+        "w_dpo_hp_over_harm": 0.5,
+        "dpo_beta": 1.0,
+        "dpo_margin": 0.0,
+        "dpo_detach_harm": true
+      }
+    },
+    "cb_llama3_8b_cb_b_dpo_mid": {
+      "script": "defenses/honeypot_cb.py",
+      "base_model": "llama3_8b",
+      "output_subdir": "cb_llama3_8b_cb_b_dpo_mid",
+      "data": {
+        "cb_path": "data/circuit_breakers_train.json",
+        "honeypot_path": "data/honeypots_qwen_fixed.jsonl"
+      },
+      "train_args": {
+        "margin_ce": 0.0,
+        "w_benign": 5,
+        "w_breaking": 3.0,
+        "w_dpo_hp_over_harm": 1.0,
+        "dpo_beta": 2.0,
+        "dpo_margin": 1.0,
+        "dpo_detach_harm": true
+      }
+    },
+    "cb_llama3_8b_cb_c_nodpo": {
+      "script": "defenses/honeypot_cb.py",
+      "base_model": "llama3_8b",
+      "output_subdir": "cb_llama3_8b_cb_c_nodpo",
+      "data": {
+        "cb_path": "data/circuit_breakers_train.json",
+        "honeypot_path": "data/honeypots_qwen_fixed.jsonl"
+      },
+      "train_args": {
+        "margin_ce": 5.0,
+        "w_benign": 1.0,
+        "w_breaking": 3.0,
+        "w_dpo_hp_over_harm": 0.0
+      }
+    },
+    "cb_llama3_8b_cb_c_dpo_weak": {
+      "script": "defenses/honeypot_cb.py",
+      "base_model": "llama3_8b",
+      "output_subdir": "cb_llama3_8b_cb_c_dpo_weak",
+      "data": {
+        "cb_path": "data/circuit_breakers_train.json",
+        "honeypot_path": "data/honeypots_qwen_fixed.jsonl"
+      },
+      "train_args": {
+        "margin_ce": 5.0,
+        "w_benign": 1.0,
+        "w_breaking": 3.0,
+        "w_dpo_hp_over_harm": 0.5,
+        "dpo_beta": 1.0,
+        "dpo_margin": 0.0,
+        "dpo_detach_harm": true
+      }
+    },
+    "cb_llama3_8b_cb_c_dpo_mid": {
+      "script": "defenses/honeypot_cb.py",
+      "base_model": "llama3_8b",
+      "output_subdir": "cb_llama3_8b_cb_c_dpo_mid",
+      "data": {
+        "cb_path": "data/circuit_breakers_train.json",
+        "honeypot_path": "data/honeypots_qwen_fixed.jsonl"
+      },
+      "train_args": {
+        "margin_ce": 5.0,
+        "w_benign": 1.0,
+        "w_breaking": 3.0,
+        "w_dpo_hp_over_harm": 1.0,
+        "dpo_beta": 2.0,
+        "dpo_margin": 1.0,
+        "dpo_detach_harm": true
+      }
+    },
+    "cb_llama3_8b_cb_d_nodpo": {
+      "script": "defenses/honeypot_cb.py",
+      "base_model": "llama3_8b",
+      "output_subdir": "cb_llama3_8b_cb_d_nodpo",
+      "data": {
+        "cb_path": "data/circuit_breakers_train.json",
+        "honeypot_path": "data/honeypots_qwen_fixed.jsonl"
+      },
+      "train_args": {
+        "margin_ce": 5.0,
+        "w_benign": 2,
+        "w_breaking": 0.5,
+        "w_dpo_hp_over_harm": 0.0
+      }
+    },
+    "cb_llama3_8b_cb_d_dpo_weak": {
+      "script": "defenses/honeypot_cb.py",
+      "base_model": "llama3_8b",
+      "output_subdir": "cb_llama3_8b_cb_d_dpo_weak",
+      "data": {
+        "cb_path": "data/circuit_breakers_train.json",
+        "honeypot_path": "data/honeypots_qwen_fixed.jsonl"
+      },
+      "train_args": {
+        "margin_ce": 5.0,
+        "w_benign": 2,
+        "w_breaking": 0.5,
+        "w_dpo_hp_over_harm": 0.5,
+        "dpo_beta": 1.0,
+        "dpo_margin": 0.0,
+        "dpo_detach_harm": true
+      }
+    },
+    "cb_llama3_8b_cb_d_dpo_mid": {
+      "script": "defenses/honeypot_cb.py",
+      "base_model": "llama3_8b",
+      "output_subdir": "cb_llama3_8b_cb_d_dpo_mid",
+      "data": {
+        "cb_path": "data/circuit_breakers_train.json",
+        "honeypot_path": "data/honeypots_qwen_fixed.jsonl"
+      },
+      "train_args": {
+        "margin_ce": 5.0,
+        "w_benign": 2,
+        "w_breaking": 0.5,
+        "w_dpo_hp_over_harm": 1.0,
+        "dpo_beta": 2.0,
+        "dpo_margin": 1.0,
+        "dpo_detach_harm": true
+      }
+    },
+    "cb_llama3_8b_cb_e_nodpo": {
+      "script": "defenses/honeypot_cb.py",
+      "base_model": "llama3_8b",
+      "output_subdir": "cb_llama3_8b_cb_e_nodpo",
+      "data": {
+        "cb_path": "data/circuit_breakers_train.json",
+        "honeypot_path": "data/honeypots_qwen_fixed.jsonl"
+      },
+      "train_args": {
+        "margin_ce": 10.0,
+        "w_benign": 1.0,
+        "w_breaking": 3.0,
+        "w_dpo_hp_over_harm": 0.0
+      }
+    },
+    "cb_llama3_8b_cb_e_dpo_weak": {
+      "script": "defenses/honeypot_cb.py",
+      "base_model": "llama3_8b",
+      "output_subdir": "cb_llama3_8b_cb_e_dpo_weak",
+      "data": {
+        "cb_path": "data/circuit_breakers_train.json",
+        "honeypot_path": "data/honeypots_qwen_fixed.jsonl"
+      },
+      "train_args": {
+        "margin_ce": 10.0,
+        "w_benign": 1.0,
+        "w_breaking": 3.0,
+        "w_dpo_hp_over_harm": 0.5,
+        "dpo_beta": 1.0,
+        "dpo_margin": 0.0,
+        "dpo_detach_harm": true
+      }
+    },
+    "cb_llama3_8b_cb_e_dpo_mid": {
+      "script": "defenses/honeypot_cb.py",
+      "base_model": "llama3_8b",
+      "output_subdir": "cb_llama3_8b_cb_e_dpo_mid",
+      "data": {
+        "cb_path": "data/circuit_breakers_train.json",
+        "honeypot_path": "data/honeypots_qwen_fixed.jsonl"
+      },
+      "train_args": {
+        "margin_ce": 10.0,
+        "w_benign": 1.0,
+        "w_breaking": 3.0,
+        "w_dpo_hp_over_harm": 1.0,
+        "dpo_beta": 2.0,
+        "dpo_margin": 1.0,
+        "dpo_detach_harm": true
+      }
+    },
+    "cb_llama3_8b_cb_f_nodpo": {
+      "script": "defenses/honeypot_cb.py",
+      "base_model": "llama3_8b",
+      "output_subdir": "cb_llama3_8b_cb_f_nodpo",
+      "data": {
+        "cb_path": "data/circuit_breakers_train.json",
+        "honeypot_path": "data/honeypots_qwen_fixed.jsonl"
+      },
+      "train_args": {
+        "margin_ce": 10.0,
+        "w_benign": 0.5,
+        "w_breaking": 2,
+        "w_dpo_hp_over_harm": 0.0
+      }
+    },
+    "cb_llama3_8b_cb_f_dpo_weak": {
+      "script": "defenses/honeypot_cb.py",
+      "base_model": "llama3_8b",
+      "output_subdir": "cb_llama3_8b_cb_f_dpo_weak",
+      "data": {
+        "cb_path": "data/circuit_breakers_train.json",
+        "honeypot_path": "data/honeypots_qwen_fixed.jsonl"
+      },
+      "train_args": {
+        "margin_ce": 10.0,
+        "w_benign": 0.5,
+        "w_breaking": 2,
+        "w_dpo_hp_over_harm": 0.5,
+        "dpo_beta": 1.0,
+        "dpo_margin": 0.0,
+        "dpo_detach_harm": true
+      }
+    },
+    "cb_llama3_8b_cb_f_dpo_mid": {
+      "script": "defenses/honeypot_cb.py",
+      "base_model": "llama3_8b",
+      "output_subdir": "cb_llama3_8b_cb_f_dpo_mid",
+      "data": {
+        "cb_path": "data/circuit_breakers_train.json",
+        "honeypot_path": "data/honeypots_qwen_fixed.jsonl"
+      },
+      "train_args": {
+        "margin_ce": 10.0,
+        "w_benign": 0.5,
+        "w_breaking": 2,
+        "w_dpo_hp_over_harm": 1.0,
+        "dpo_beta": 2.0,
+        "dpo_margin": 1.0,
+        "dpo_detach_harm": true
+      }
+    }
+  },
+  "attacks": {
+    "grpo_prefill_fast": {
+      "attack_name": "grpo_prefill",
+      "num_variants": 1,
+      "attack_config": [
+        {
+          "lr": 1e-05,
+          "num_steps": 100,
+          "rollouts_per_step": 2,
+          "max_new_tokens": 150,
+          "prefill_max_chars": 24,
+          "use_elite_buffer": true,
+          "elite_buffer_size": 16,
+          "seed_jailbreak_bank": [
+            "wildjailbreaks",
+            "jailbreakv"
+          ]
+        }
+      ]
+    }
+  },
+  "benign_evals": {
+    "gsm8k_200": {
+      "tasks": "gsm8k",
+      "limit": 200
+    }
+  },
+  "pipelines": {
+    "base_llama3_8b": [
+      {
+        "stage": "attack",
+        "defense": "base_llama3_8b",
+        "attacks": [
+          "grpo_prefill_fast"
+        ]
+      },
+      {
+        "stage": "benign_eval",
+        "defense": "base_llama3_8b",
+        "benign_eval": "gsm8k_200"
+      }
+    ],
+    "cb_llama3_8b_cb_a_nodpo": [
+      {
+        "stage": "train",
+        "defense": "cb_llama3_8b_cb_a_nodpo"
+      },
+      {
+        "stage": "attack",
+        "defense": "cb_llama3_8b_cb_a_nodpo",
+        "attacks": [
+          "grpo_prefill_fast"
+        ]
+      },
+      {
+        "stage": "benign_eval",
+        "defense": "cb_llama3_8b_cb_a_nodpo",
+        "benign_eval": "gsm8k_200"
+      }
+    ],
+    "cb_llama3_8b_cb_a_dpo_weak": [
+      {
+        "stage": "train",
+        "defense": "cb_llama3_8b_cb_a_dpo_weak"
+      },
+      {
+        "stage": "attack",
+        "defense": "cb_llama3_8b_cb_a_dpo_weak",
+        "attacks": [
+          "grpo_prefill_fast"
+        ]
+      },
+      {
+        "stage": "benign_eval",
+        "defense": "cb_llama3_8b_cb_a_dpo_weak",
+        "benign_eval": "gsm8k_200"
+      }
+    ],
+    "cb_llama3_8b_cb_a_dpo_mid": [
+      {
+        "stage": "train",
+        "defense": "cb_llama3_8b_cb_a_dpo_mid"
+      },
+      {
+        "stage": "attack",
+        "defense": "cb_llama3_8b_cb_a_dpo_mid",
+        "attacks": [
+          "grpo_prefill_fast"
+        ]
+      },
+      {
+        "stage": "benign_eval",
+        "defense": "cb_llama3_8b_cb_a_dpo_mid",
+        "benign_eval": "gsm8k_200"
+      }
+    ],
+    "cb_llama3_8b_cb_b_nodpo": [
+      {
+        "stage": "train",
+        "defense": "cb_llama3_8b_cb_b_nodpo"
+      },
+      {
+        "stage": "attack",
+        "defense": "cb_llama3_8b_cb_b_nodpo",
+        "attacks": [
+          "grpo_prefill_fast"
+        ]
+      },
+      {
+        "stage": "benign_eval",
+        "defense": "cb_llama3_8b_cb_b_nodpo",
+        "benign_eval": "gsm8k_200"
+      }
+    ],
+    "cb_llama3_8b_cb_b_dpo_weak": [
+      {
+        "stage": "train",
+        "defense": "cb_llama3_8b_cb_b_dpo_weak"
+      },
+      {
+        "stage": "attack",
+        "defense": "cb_llama3_8b_cb_b_dpo_weak",
+        "attacks": [
+          "grpo_prefill_fast"
+        ]
+      },
+      {
+        "stage": "benign_eval",
+        "defense": "cb_llama3_8b_cb_b_dpo_weak",
+        "benign_eval": "gsm8k_200"
+      }
+    ],
+    "cb_llama3_8b_cb_b_dpo_mid": [
+      {
+        "stage": "train",
+        "defense": "cb_llama3_8b_cb_b_dpo_mid"
+      },
+      {
+        "stage": "attack",
+        "defense": "cb_llama3_8b_cb_b_dpo_mid",
+        "attacks": [
+          "grpo_prefill_fast"
+        ]
+      },
+      {
+        "stage": "benign_eval",
+        "defense": "cb_llama3_8b_cb_b_dpo_mid",
+        "benign_eval": "gsm8k_200"
+      }
+    ],
+    "cb_llama3_8b_cb_c_nodpo": [
+      {
+        "stage": "train",
+        "defense": "cb_llama3_8b_cb_c_nodpo"
+      },
+      {
+        "stage": "attack",
+        "defense": "cb_llama3_8b_cb_c_nodpo",
+        "attacks": [
+          "grpo_prefill_fast"
+        ]
+      },
+      {
+        "stage": "benign_eval",
+        "defense": "cb_llama3_8b_cb_c_nodpo",
+        "benign_eval": "gsm8k_200"
+      }
+    ],
+    "cb_llama3_8b_cb_c_dpo_weak": [
+      {
+        "stage": "train",
+        "defense": "cb_llama3_8b_cb_c_dpo_weak"
+      },
+      {
+        "stage": "attack",
+        "defense": "cb_llama3_8b_cb_c_dpo_weak",
+        "attacks": [
+          "grpo_prefill_fast"
+        ]
+      },
+      {
+        "stage": "benign_eval",
+        "defense": "cb_llama3_8b_cb_c_dpo_weak",
+        "benign_eval": "gsm8k_200"
+      }
+    ],
+    "cb_llama3_8b_cb_c_dpo_mid": [
+      {
+        "stage": "train",
+        "defense": "cb_llama3_8b_cb_c_dpo_mid"
+      },
+      {
+        "stage": "attack",
+        "defense": "cb_llama3_8b_cb_c_dpo_mid",
+        "attacks": [
+          "grpo_prefill_fast"
+        ]
+      },
+      {
+        "stage": "benign_eval",
+        "defense": "cb_llama3_8b_cb_c_dpo_mid",
+        "benign_eval": "gsm8k_200"
+      }
+    ],
+    "cb_llama3_8b_cb_d_nodpo": [
+      {
+        "stage": "train",
+        "defense": "cb_llama3_8b_cb_d_nodpo"
+      },
+      {
+        "stage": "attack",
+        "defense": "cb_llama3_8b_cb_d_nodpo",
+        "attacks": [
+          "grpo_prefill_fast"
+        ]
+      },
+      {
+        "stage": "benign_eval",
+        "defense": "cb_llama3_8b_cb_d_nodpo",
+        "benign_eval": "gsm8k_200"
+      }
+    ],
+    "cb_llama3_8b_cb_d_dpo_weak": [
+      {
+        "stage": "train",
+        "defense": "cb_llama3_8b_cb_d_dpo_weak"
+      },
+      {
+        "stage": "attack",
+        "defense": "cb_llama3_8b_cb_d_dpo_weak",
+        "attacks": [
+          "grpo_prefill_fast"
+        ]
+      },
+      {
+        "stage": "benign_eval",
+        "defense": "cb_llama3_8b_cb_d_dpo_weak",
+        "benign_eval": "gsm8k_200"
+      }
+    ],
+    "cb_llama3_8b_cb_d_dpo_mid": [
+      {
+        "stage": "train",
+        "defense": "cb_llama3_8b_cb_d_dpo_mid"
+      },
+      {
+        "stage": "attack",
+        "defense": "cb_llama3_8b_cb_d_dpo_mid",
+        "attacks": [
+          "grpo_prefill_fast"
+        ]
+      },
+      {
+        "stage": "benign_eval",
+        "defense": "cb_llama3_8b_cb_d_dpo_mid",
+        "benign_eval": "gsm8k_200"
+      }
+    ],
+    "cb_llama3_8b_cb_e_nodpo": [
+      {
+        "stage": "train",
+        "defense": "cb_llama3_8b_cb_e_nodpo"
+      },
+      {
+        "stage": "attack",
+        "defense": "cb_llama3_8b_cb_e_nodpo",
+        "attacks": [
+          "grpo_prefill_fast"
+        ]
+      },
+      {
+        "stage": "benign_eval",
+        "defense": "cb_llama3_8b_cb_e_nodpo",
+        "benign_eval": "gsm8k_200"
+      }
+    ],
+    "cb_llama3_8b_cb_e_dpo_weak": [
+      {
+        "stage": "train",
+        "defense": "cb_llama3_8b_cb_e_dpo_weak"
+      },
+      {
+        "stage": "attack",
+        "defense": "cb_llama3_8b_cb_e_dpo_weak",
+        "attacks": [
+          "grpo_prefill_fast"
+        ]
+      },
+      {
+        "stage": "benign_eval",
+        "defense": "cb_llama3_8b_cb_e_dpo_weak",
+        "benign_eval": "gsm8k_200"
+      }
+    ],
+    "cb_llama3_8b_cb_e_dpo_mid": [
+      {
+        "stage": "train",
+        "defense": "cb_llama3_8b_cb_e_dpo_mid"
+      },
+      {
+        "stage": "attack",
+        "defense": "cb_llama3_8b_cb_e_dpo_mid",
+        "attacks": [
+          "grpo_prefill_fast"
+        ]
+      },
+      {
+        "stage": "benign_eval",
+        "defense": "cb_llama3_8b_cb_e_dpo_mid",
+        "benign_eval": "gsm8k_200"
+      }
+    ],
+    "cb_llama3_8b_cb_f_nodpo": [
+      {
+        "stage": "train",
+        "defense": "cb_llama3_8b_cb_f_nodpo"
+      },
+      {
+        "stage": "attack",
+        "defense": "cb_llama3_8b_cb_f_nodpo",
+        "attacks": [
+          "grpo_prefill_fast"
+        ]
+      },
+      {
+        "stage": "benign_eval",
+        "defense": "cb_llama3_8b_cb_f_nodpo",
+        "benign_eval": "gsm8k_200"
+      }
+    ],
+    "cb_llama3_8b_cb_f_dpo_weak": [
+      {
+        "stage": "train",
+        "defense": "cb_llama3_8b_cb_f_dpo_weak"
+      },
+      {
+        "stage": "attack",
+        "defense": "cb_llama3_8b_cb_f_dpo_weak",
+        "attacks": [
+          "grpo_prefill_fast"
+        ]
+      },
+      {
+        "stage": "benign_eval",
+        "defense": "cb_llama3_8b_cb_f_dpo_weak",
+        "benign_eval": "gsm8k_200"
+      }
+    ],
+    "cb_llama3_8b_cb_f_dpo_mid": [
+      {
+        "stage": "train",
+        "defense": "cb_llama3_8b_cb_f_dpo_mid"
+      },
+      {
+        "stage": "attack",
+        "defense": "cb_llama3_8b_cb_f_dpo_mid",
+        "attacks": [
+          "grpo_prefill_fast"
+        ]
+      },
+      {
+        "stage": "benign_eval",
+        "defense": "cb_llama3_8b_cb_f_dpo_mid",
+        "benign_eval": "gsm8k_200"
+      }
+    ]
+  },
+  "run_pipelines": [
+    "base_llama3_8b",
+    "cb_llama3_8b_cb_a_nodpo",
+    "cb_llama3_8b_cb_a_dpo_weak",
+    "cb_llama3_8b_cb_a_dpo_mid",
+    "cb_llama3_8b_cb_b_nodpo",
+    "cb_llama3_8b_cb_b_dpo_weak",
+    "cb_llama3_8b_cb_b_dpo_mid",
+    "cb_llama3_8b_cb_c_nodpo",
+    "cb_llama3_8b_cb_c_dpo_weak",
+    "cb_llama3_8b_cb_c_dpo_mid",
+    "cb_llama3_8b_cb_d_nodpo",
+    "cb_llama3_8b_cb_d_dpo_weak",
+    "cb_llama3_8b_cb_d_dpo_mid",
+    "cb_llama3_8b_cb_e_nodpo",
+    "cb_llama3_8b_cb_e_dpo_weak",
+    "cb_llama3_8b_cb_e_dpo_mid",
+    "cb_llama3_8b_cb_f_nodpo",
+    "cb_llama3_8b_cb_f_dpo_weak",
+    "cb_llama3_8b_cb_f_dpo_mid"
+  ]
+}
